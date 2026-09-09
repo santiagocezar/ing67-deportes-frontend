@@ -89,9 +89,3 @@ async function addSport(ev: SubmitEvent) {
         <p v-else>Hubo un problema para cargar los datos</p>
     </div>
 </template>
-
-<style>
-label {
-    display: block;
-}
-</style>

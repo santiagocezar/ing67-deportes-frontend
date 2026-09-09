@@ -1,5 +1,6 @@
 export default defineNuxtPlugin((nuxtApp) => {
     const auth = useAuth();
+    const route = useRoute();
 
     const api = $fetch.create({
         baseURL: useRuntimeConfig().public.apiBase,
@@ -15,7 +16,18 @@ export default defineNuxtPlugin((nuxtApp) => {
         },
         async onResponseError({ response }) {
             if (response.status === 401) {
-                await nuxtApp.runWithContext(() => auth.logout());
+                await nuxtApp.runWithContext(async () => {
+                    console.log("hoaosfdo");
+                    let target: string | undefined;
+                    if (typeof location !== "undefined") {
+                        target = location.toString();
+                    } else {
+                        target = route.fullPath;
+                    }
+
+                    console.log("Target:", target);
+                    return await auth.logout(target);
+                });
             }
         },
     });

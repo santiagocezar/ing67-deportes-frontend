@@ -27,9 +27,14 @@ export function useAuth() {
             token.value = res;
             tokenCookie.value = JSON.stringify(res);
         },
-        async logout() {
+        async logout(target?: string) {
             tokenCookie.value = undefined;
-            await navigateTo("/login");
+            const params = new URLSearchParams();
+            if (target) {
+                params.set("target", target);
+            }
+            console.log("URL:", params.toString());
+            return await navigateTo("/login?" + params.toString());
         },
         async refresh() {
             const { token_type, refresh_token } = token.value;

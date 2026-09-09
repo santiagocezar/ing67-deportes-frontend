@@ -1,8 +1,4 @@
-export const useAPI = createUseFetch((opts) => {
-    const auth = useAuth();
-    const { $api } = useNuxtApp();
-
-    return {
-        $fetch: $api,
-    };
-});
+export const useAPI = createUseFetch((opts) => ({
+    ...opts,
+    $fetch: useNuxtApp().$api,
+}));

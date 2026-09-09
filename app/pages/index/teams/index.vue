@@ -1,13 +1,19 @@
 <script setup lang="ts">
-const { $api } = useNuxtApp();
-const { data, refresh } = await useAPI<api.ListTeams>("/teams");
-const { data: sportsData } = await useAPI<api.ListSports>("/sports");
+import type {
+    SportListResponse,
+    SportResponse,
+    TeamCreateRequest,
+    TeamListResponse,
+} from "~/utils/openapi";
 
-const value = reactive<api.Team>({
+const { $api } = useNuxtApp();
+const { data, refresh } = await useAPI<TeamListResponse>("/teams");
+const { data: sportsData } = await useAPI<SportListResponse>("/sports");
+
+const value = reactive({
     name: "",
-    gender_category: "",
-    is_enabled: true,
-    sport: undefined,
+    gender_category: "female" as TeamCreateRequest["gender_category"],
+    sport: undefined as SportResponse | undefined,
 });
 
 async function addTeam(ev: SubmitEvent) {
@@ -18,8 +24,8 @@ async function addTeam(ev: SubmitEvent) {
         body: {
             name: value.name,
             gender_category: value.gender_category,
-            sport_id: value.sport?.id,
-        },
+            sport_id: value.sport?.id!,
+        } satisfies TeamCreateRequest,
     });
     refresh();
 }
@@ -93,9 +99,3 @@ async function addTeam(ev: SubmitEvent) {
         <p v-else>Hubo un problema para cargar los datos</p>
     </div>
 </template>
-
-<style>
-label {
-    display: block;
-}
-</style>
