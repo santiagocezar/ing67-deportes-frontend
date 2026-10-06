@@ -1,4 +1,10 @@
 <script setup lang="ts">
+import Edit from "~icons/fluent/edit-48-filled";
+import Options from "~icons/fluent/options-48-filled";
+import Subtract from "~icons/fluent/subtract-circle-48-filled";
+import Search from "~icons/fluent/search-48-filled";
+import Checkmark from "~icons/fluent/checkmark-circle-48-filled";
+
 type Gender = "male" | "female";
 type PlayerStatus = "enabled" | "disabled" | "all";
 type PlayerSort = "name_asc" | "created_at_desc";
@@ -277,10 +283,9 @@ async function setPlayerEnabled(player: Player, enabled: boolean) {
     message.value = "";
 
     try {
-        await $api(
-            `/players/${player.id}/${enabled ? "enable" : "disable"}`,
-            { method: "PATCH" },
-        );
+        await $api(`/players/${player.id}/${enabled ? "enable" : "disable"}`, {
+            method: "PATCH",
+        });
     } catch (error) {
         reportError(error);
         return;
@@ -361,82 +366,164 @@ function goToPage(page: number) {
 
     <hr />
 
-    <form action="#" @submit.prevent>
-        <label class="field">
-            <span class="label">Buscar</span>
-            <input
-                class="input"
-                v-model="filters.search"
-                type="search"
-                placeholder="Nombre del jugador"
-            />
-        </label>
-        <br />
-        <label class="field">
-            <span class="label">Deporte</span>
-            <div class="select">
-                <select v-model="filters.sport_id">
-                    <option value="">Todos</option>
-                    <option
-                        v-for="sport in sportsData?.sports"
-                        :key="sport.id"
-                        :value="sport.id"
-                    >
-                        {{ sport.name }}
-                    </option>
-                </select>
-            </div>
-        </label>
-        <br />
-        <label class="field">
-            <span class="label">Género</span>
-            <div class="select">
-                <select v-model="filters.gender">
-                    <option value="">Todos</option>
-                    <option value="male">Masculino</option>
-                    <option value="female">Femenino</option>
-                </select>
-            </div>
-        </label>
-        <br />
-        <label class="field">
-            <span class="label">Equipo</span>
-            <div class="select">
-                <select v-model="filters.team_id">
-                    <option value="">Todos</option>
-                    <option
-                        v-for="team in filterTeamsData?.teams"
-                        :key="team.id"
-                        :value="team.id"
-                    >
-                        {{ team.name }}
-                    </option>
-                </select>
-            </div>
-        </label>
-        <br />
-        <label class="field">
-            <span class="label">Estado</span>
-            <div class="select">
-                <select v-model="filters.status">
-                    <option value="enabled">Habilitados</option>
-                    <option value="disabled">Deshabilitados</option>
-                    <option value="all">Todos</option>
-                </select>
-            </div>
-        </label>
-        <br />
-        <label class="field">
-            <span class="label">Orden</span>
-            <div class="select">
-                <select v-model="filters.sort">
-                    <option value="name_asc">Nombre (A-Z)</option>
-                    <option value="created_at_desc">Más recientes</option>
-                </select>
-            </div>
-        </label>
+    <form class="filters" action="#" @submit.prevent>
+        <div class="search">
+            <p class="control has-icons-left">
+                <input
+                    class="input"
+                    v-model="filters.search"
+                    type="search"
+                    placeholder="Buscar por nombre"
+                />
+                <span class="icon is-left">
+                    <Search />
+                </span>
+            </p>
+
+            <button class="button" type="button" popovertarget="more-filters">
+                <Options />
+            </button>
+        </div>
+
+        <dialog popover id="more-filters" class="card is-primary">
+            <label class="field">
+                <span class="label">Deporte</span>
+                <div class="select">
+                    <select v-model="filters.sport_id">
+                        <option value="">Todos</option>
+                        <option
+                            v-for="sport in sportsData?.sports"
+                            :key="sport.id"
+                            :value="sport.id"
+                        >
+                            {{ sport.name }}
+                        </option>
+                    </select>
+                </div>
+            </label>
+            <label class="field">
+                <span class="label">Género</span>
+                <div class="select">
+                    <select v-model="filters.gender">
+                        <option value="">Todos</option>
+                        <option value="male">Masculino</option>
+                        <option value="female">Femenino</option>
+                    </select>
+                </div>
+            </label>
+            <label class="field">
+                <span class="label">Equipo</span>
+                <div class="select">
+                    <select v-model="filters.team_id">
+                        <option value="">Todos</option>
+                        <option
+                            v-for="team in filterTeamsData?.teams"
+                            :key="team.id"
+                            :value="team.id"
+                        >
+                            {{ team.name }}
+                        </option>
+                    </select>
+                </div>
+            </label>
+            <br />
+            <label class="field">
+                <span class="label">Estado</span>
+                <div class="select">
+                    <select v-model="filters.status">
+                        <option value="enabled">Habilitados</option>
+                        <option value="disabled">Deshabilitados</option>
+                        <option value="all">Todos</option>
+                    </select>
+                </div>
+            </label>
+            <label class="field">
+                <span class="label">Orden</span>
+                <div class="select">
+                    <select v-model="filters.sort">
+                        <option value="name_asc">Nombre (A-Z)</option>
+                        <option value="created_at_desc">Más recientes</option>
+                    </select>
+                </div>
+            </label>
+        </dialog>
     </form>
 
+    <div class="player-grid">
+        <div
+            class="cell player card"
+            v-for="player in data.players"
+            :key="player.id"
+        >
+            <!-- <td>
+                {{ player.id }}
+            </td> -->
+            <header class="card-header">
+                <p class="card-header-title">
+                    <span class="pr-2">
+                        {{ player.name }}
+                    </span>
+                    <span class="has-text-weight-light">
+                        {{ player.sport.name }} ·
+                        {{ genderLabel(player.gender) }}
+                    </span>
+                </p>
+
+                <button
+                    class="card-header-icon"
+                    aria-label="Editar"
+                    v-if="player.is_enabled"
+                    @click="startEdit(player)"
+                >
+                    <span class="icon">
+                        <Edit />
+                    </span>
+                </button>
+                <button
+                    class="card-header-icon"
+                    aria-label="Deshabilitar"
+                    v-if="player.is_enabled"
+                    @click="setPlayerEnabled(player, false)"
+                >
+                    <span class="icon has-text-danger">
+                        <Subtract />
+                    </span>
+                </button>
+                <button
+                    class="card-header-icon"
+                    aria-label="Habilitar"
+                    v-else
+                    @click="setPlayerEnabled(player, true)"
+                >
+                    <span class="icon has-text-success">
+                        <Checkmark />
+                    </span>
+                </button>
+            </header>
+            <div class="card-content pl-4 pb-4 pr-4 pt-0">
+                <p>
+                    <strong>Juega en</strong>
+
+                    {{
+                        player.teams.map((team) => team.name).join(", ") || "-"
+                    }}
+                </p>
+                <p>
+                    {{ player.is_enabled ? "Habilitado" : "Deshabilitado" }}
+                </p>
+                <p>
+                    <small>
+                        Registrado {{ formatDate(player.created_at) }}
+                    </small>
+                </p>
+            </div>
+            <!-- <footer class="card-footer">
+                <a href="#" class="card-footer-item">Save</a>
+                <a href="#" class="card-footer-item">Edit</a>
+                <a href="#" class="card-footer-item">Delete</a>
+            </footer> -->
+        </div>
+    </div>
     <table class="table" v-if="data">
         <thead>
             <tr>
@@ -450,56 +537,7 @@ function goToPage(page: number) {
                 <th>Acciones</th>
             </tr>
         </thead>
-        <tbody>
-            <tr v-for="player in data.players" :key="player.id">
-                <td>
-                    {{ player.id }}
-                </td>
-                <td>
-                    {{ player.name }}
-                </td>
-                <td>
-                    {{ player.sport.name }}
-                </td>
-                <td>
-                    {{ genderLabel(player.gender) }}
-                </td>
-                <td>
-                    {{
-                        player.teams.map((team) => team.name).join(", ") || "-"
-                    }}
-                </td>
-                <td>
-                    {{ player.is_enabled ? "Habilitado" : "Deshabilitado" }}
-                </td>
-                <td>
-                    {{ formatDate(player.created_at) }}
-                </td>
-                <td>
-                    <button
-                        class="button is-small"
-                        v-if="player.is_enabled"
-                        @click="startEdit(player)"
-                    >
-                        Editar
-                    </button>
-                    <button
-                        class="button is-small is-danger"
-                        v-if="player.is_enabled"
-                        @click="setPlayerEnabled(player, false)"
-                    >
-                        Deshabilitar
-                    </button>
-                    <button
-                        class="button is-small is-success"
-                        v-else
-                        @click="setPlayerEnabled(player, true)"
-                    >
-                        Habilitar
-                    </button>
-                </td>
-            </tr>
-        </tbody>
+        <tbody></tbody>
     </table>
     <p v-else>Hubo un problema para cargar los datos</p>
 
@@ -520,9 +558,7 @@ function goToPage(page: number) {
         </button>
         <p class="pagination-list">
             Página {{ data.pagination.page }} de
-            {{ data.pagination.total_pages }} ({{
-                data.pagination.total_items
-            }}
+            {{ data.pagination.total_pages }} ({{ data.pagination.total_items }}
             jugadores)
         </p>
     </nav>
@@ -530,54 +566,47 @@ function goToPage(page: number) {
     <div class="modal is-active" v-if="editing">
         <div class="modal-background" @click="cancelEdit"></div>
         <div class="modal-content">
-            <form class="box" action="#" @submit="savePlayer">
-                <p class="title is-5">Editar jugador #{{ editing.id }}</p>
-                <p>
-                    {{ editing.sport.name }} ·
-                    {{ genderLabel(editing.gender) }}
-                </p>
-                <br />
-                <label class="field">
-                    <span class="label">Nombre</span>
-                    <input
-                        class="input"
-                        v-model="edited.name"
-                        type="text"
-                        required
-                    />
-                </label>
-                <br />
-                <div class="field">
-                    <span class="label">
-                        Equipos (hasta {{ MAX_PLAYER_TEAMS }})
-                    </span>
-                    <p v-if="!editTeamsData?.teams.length">
-                        No hay equipos habilitados para esa combinación.
-                    </p>
-                    <label
-                        class="checkbox"
-                        v-for="team in editTeamsData?.teams"
-                        :key="team.id"
-                    >
-                        <input
-                            type="checkbox"
-                            :checked="edited.team_ids.includes(team.id)"
-                            :disabled="
-                                !edited.team_ids.includes(team.id) &&
-                                edited.team_ids.length >= MAX_PLAYER_TEAMS
-                            "
-                            @change="toggleTeam(edited.team_ids, team.id)"
-                        />
-                        {{ team.name }}
-                    </label>
-                </div>
-                <br />
-                <button class="button is-primary">Guardar cambios</button>
-                <button class="button" type="button" @click="cancelEdit">
-                    Cancelar
-                </button>
-            </form>
+
         </div>
         <button class="modal-close is-large" @click="cancelEdit"></button>
     </div>
 </template>
+
+<style>
+.search {
+    display: flex;
+    gap: 1rem;
+    .control {
+        flex-grow: 1;
+    }
+}
+#more-filters {
+    &:popover-open {
+        display: grid;
+    }
+
+    grid-template-columns: auto 1fr;
+    gap: 0.5rem;
+
+    & .label {
+        text-align: right;
+        margin: 0;
+    }
+
+    & .field {
+        display: grid;
+        grid-column: span 2;
+        grid-template-columns: subgrid;
+        justify-items: stretch;
+        align-items: center;
+    }
+}
+.player {
+    height: 100%;
+}
+.player-grid {
+    display: grid;
+    gap: 0.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(24rem, 1fr));
+}
+</style>

@@ -1,9 +1,12 @@
 export default defineNuxtPlugin((nuxtApp) => {
     const auth = useAuth();
-    const route = useRoute();
+
+    let refreshing: Promise<void> | null = null;
 
     const api = $fetch.create({
         baseURL: useRuntimeConfig().public.apiBase,
+        retry: 1,
+        retryStatusCodes: [401],
         onRequest({ request, options, error }) {
             if (auth.token) {
                 const { token_type, access_token } = auth.token;
@@ -17,16 +20,12 @@ export default defineNuxtPlugin((nuxtApp) => {
         async onResponseError({ response }) {
             if (response.status === 401) {
                 await nuxtApp.runWithContext(async () => {
-                    console.log("hoaosfdo");
-                    let target: string | undefined;
-                    if (typeof location !== "undefined") {
-                        target = location.toString();
-                    } else {
-                        target = route.fullPath;
+                    if (!refreshing) {
+                        refreshing = auth.refresh().finally(() => {
+                            refreshing = null;
+                        });
                     }
-
-                    console.log("Target:", target);
-                    return await auth.logout(target);
+                    await refreshing;
                 });
             }
         },

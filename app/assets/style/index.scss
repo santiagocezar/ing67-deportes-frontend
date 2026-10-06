@@ -3,3 +3,21 @@
 label.label {
     display: block;
 }
+
+.select > select {
+    width: 100%;
+}
+
+dialog {
+    padding: 0;
+    border: none;
+
+    &::backdrop {
+        background-color: hsla(
+            var(--bulma-scheme-h),
+            var(--bulma-scheme-s),
+            var(--bulma-scheme-invert-l),
+            0.86
+        );
+    }
+}
