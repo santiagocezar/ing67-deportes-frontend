@@ -12,6 +12,10 @@ dialog {
     padding: 0;
     border: none;
 
+    &.card {
+        position: fixed;
+    }
+
     &::backdrop {
         background-color: hsla(
             var(--bulma-scheme-h),

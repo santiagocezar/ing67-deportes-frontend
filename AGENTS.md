@@ -1,1 +1,1 @@
-MUST read this before doing any Nuxt related tasks: https://nuxt.com/llms.txt, use `curl` to avoid webfetch truncation
+Read https://nuxt.com/llms.txt before doing ANY Nuxt related tasks. MUST read AT LEAST the summary, even for minor tasks.

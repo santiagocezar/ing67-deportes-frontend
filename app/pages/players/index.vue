@@ -1,65 +1,33 @@
 <script setup lang="ts">
-import Edit from "~icons/fluent/edit-48-filled";
-import Options from "~icons/fluent/options-48-filled";
-import Subtract from "~icons/fluent/subtract-circle-48-filled";
-import Search from "~icons/fluent/search-48-filled";
-import Checkmark from "~icons/fluent/checkmark-circle-48-filled";
+import {
+    type TeamsListResponse,
+    type PlayerResponse as Player,
+    type PlayerListResponse,
+    type SportsListResponse,
+    type TeamListResponse,
+} from "~/utils/openapi";
 
-type Gender = "male" | "female";
+import Options from "~icons/fluent/options-48-filled";
+import Search from "~icons/fluent/search-48-filled";
+
 type PlayerStatus = "enabled" | "disabled" | "all";
 type PlayerSort = "name_asc" | "created_at_desc";
-
-interface APIPlayers {
-    players: Player[];
-    pagination: Pagination;
-}
-
-interface APISports {
-    sports: Sport[];
-}
-
-interface APITeams {
-    teams: Team[];
-    pagination: Pagination;
-}
-
-interface Pagination {
-    page: number;
-    per_page: number;
-    total_items: number;
-    total_pages: number;
-}
-
-interface Sport {
-    id: number;
-    max_players: number;
-    max_players_in_game: number;
-    name: string;
-}
-
-interface Team {
-    id: number;
-    name: string;
-    sport: Sport;
-    gender_category: Gender;
-    is_enabled: boolean;
-}
 
 interface PlayerTeam {
     id: number;
     name: string;
 }
 
-interface Player {
-    id: number;
-    name: string;
-    sport: Sport;
-    gender: Gender;
-    teams: PlayerTeam[];
-    is_enabled: boolean;
-    created_at: string;
-    disabled_at: string | null;
-}
+// interface Player {
+//     id: number;
+//     name: string;
+//     sport: Sport;
+//     gender: Gender;
+//     teams: PlayerTeam[];
+//     is_enabled: boolean;
+//     created_at: string
+//     disabled_at: string | null;
+// }
 
 const MAX_PLAYER_TEAMS = 3;
 
@@ -68,7 +36,7 @@ const { $api } = useNuxtApp();
 const filters = reactive({
     search: "",
     sport_id: "" as number | "",
-    gender: "" as Gender | "",
+    gender: "" as Player["gender"] | "",
     team_id: "" as number | "",
     status: "enabled" as PlayerStatus,
     sort: "name_asc" as PlayerSort,
@@ -90,10 +58,10 @@ const playersQuery = computed(() => {
     return query;
 });
 
-const { data, refresh } = await useAPI<APIPlayers>("/players", {
+const { data, refresh } = await useAPI<PlayerListResponse>("/players", {
     query: playersQuery,
 });
-const { data: sportsData } = await useAPI<APISports>("/sports");
+const { data: sportsData } = await useAPI<SportsListResponse>("/sports");
 
 // Los equipos del filtro se acotan al deporte y al género elegidos.
 const filterTeamsQuery = computed(() => {
@@ -108,14 +76,14 @@ const filterTeamsQuery = computed(() => {
     return query;
 });
 
-const { data: filterTeamsData } = await useAPI<APITeams>("/teams", {
+const { data: filterTeamsData } = await useAPI<TeamListResponse>("/teams", {
     query: filterTeamsQuery,
 });
 
 const value = reactive<{
     name: string;
     sport_id: number | "";
-    gender: Gender | "";
+    gender: Player["gender"] | "";
     team_ids: number[];
 }>({
     name: "",
@@ -128,7 +96,7 @@ const canPickCreateTeams = computed(() =>
     Boolean(value.sport_id && value.gender),
 );
 
-const { data: createTeamsData } = await useAPI<APITeams>("/teams", {
+const { data: createTeamsData } = await useAPI<TeamListResponse>("/teams", {
     query: computed(() => ({
         status: "enabled",
         sort: "name_asc",
@@ -144,7 +112,7 @@ const edited = reactive<{ name: string; team_ids: number[] }>({
     team_ids: [],
 });
 
-const { data: editTeamsData } = await useAPI<APITeams>("/teams", {
+const { data: editTeamsData } = await useAPI<TeamListResponse>("/teams", {
     query: computed(() => ({
         status: "enabled",
         sort: "name_asc",
@@ -161,7 +129,7 @@ function reportError(error: unknown) {
     message.value = body?.error?.message ?? "Ocurrió un error inesperado.";
 }
 
-function genderLabel(gender: Gender) {
+function genderLabel(gender: Player["gender"]) {
     return gender === "male" ? "Masculino" : "Femenino";
 }
 
@@ -255,43 +223,6 @@ function cancelEdit() {
     editing.value = null;
     edited.name = "";
     edited.team_ids = [];
-}
-
-async function savePlayer(ev: SubmitEvent) {
-    ev.preventDefault();
-    if (!editing.value) return;
-    message.value = "";
-
-    try {
-        await $api(`/players/${editing.value.id}`, {
-            method: "PUT",
-            body: {
-                name: edited.name,
-                team_ids: [...edited.team_ids],
-            },
-        });
-    } catch (error) {
-        reportError(error);
-        return;
-    }
-
-    cancelEdit();
-    refresh();
-}
-
-async function setPlayerEnabled(player: Player, enabled: boolean) {
-    message.value = "";
-
-    try {
-        await $api(`/players/${player.id}/${enabled ? "enable" : "disable"}`, {
-            method: "PATCH",
-        });
-    } catch (error) {
-        reportError(error);
-        return;
-    }
-
-    refresh();
 }
 
 function goToPage(page: number) {
@@ -449,10 +380,11 @@ function goToPage(page: number) {
         </dialog>
     </form>
 
-    <div class="player-grid">
-        <div
+    <div class="player-grid" v-if="data">
+        <a
             class="cell player card"
             v-for="player in data.players"
+            :href="`/players/${player.id}`"
             :key="player.id"
         >
             <!-- <td>
@@ -469,36 +401,16 @@ function goToPage(page: number) {
                     </span>
                 </p>
 
-                <button
-                    class="card-header-icon"
-                    aria-label="Editar"
-                    v-if="player.is_enabled"
-                    @click="startEdit(player)"
-                >
-                    <span class="icon">
-                        <Edit />
-                    </span>
-                </button>
-                <button
-                    class="card-header-icon"
-                    aria-label="Deshabilitar"
-                    v-if="player.is_enabled"
-                    @click="setPlayerEnabled(player, false)"
-                >
-                    <span class="icon has-text-danger">
-                        <Subtract />
-                    </span>
-                </button>
-                <button
-                    class="card-header-icon"
-                    aria-label="Habilitar"
-                    v-else
-                    @click="setPlayerEnabled(player, true)"
-                >
-                    <span class="icon has-text-success">
-                        <Checkmark />
-                    </span>
-                </button>
+                <!-- <button -->
+                <!--     class="card-header-icon" -->
+                <!--     aria-label="Editar" -->
+                <!--     v-if="player.is_enabled" -->
+                <!--     @click="startEdit(player)" -->
+                <!-- > -->
+                <!--     <span class="icon"> -->
+                <!--         <Edit /> -->
+                <!--     </span> -->
+                <!-- </button> -->
             </header>
             <div class="card-content pl-4 pb-4 pr-4 pt-0">
                 <p>
@@ -522,23 +434,8 @@ function goToPage(page: number) {
                 <a href="#" class="card-footer-item">Edit</a>
                 <a href="#" class="card-footer-item">Delete</a>
             </footer> -->
-        </div>
+        </a>
     </div>
-    <table class="table" v-if="data">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Deporte</th>
-                <th>Género</th>
-                <th>Equipos</th>
-                <th>Estado</th>
-                <th>Creado</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
     <p v-else>Hubo un problema para cargar los datos</p>
 
     <nav class="pagination" v-if="data && data.pagination.total_pages > 1">
@@ -565,9 +462,7 @@ function goToPage(page: number) {
 
     <div class="modal is-active" v-if="editing">
         <div class="modal-background" @click="cancelEdit"></div>
-        <div class="modal-content">
-
-        </div>
+        <div class="modal-content"></div>
         <button class="modal-close is-large" @click="cancelEdit"></button>
     </div>
 </template>
@@ -576,10 +471,12 @@ function goToPage(page: number) {
 .search {
     display: flex;
     gap: 1rem;
+
     .control {
         flex-grow: 1;
     }
 }
+
 #more-filters {
     &:popover-open {
         display: grid;
@@ -601,9 +498,11 @@ function goToPage(page: number) {
         align-items: center;
     }
 }
+
 .player {
     height: 100%;
 }
+
 .player-grid {
     display: grid;
     gap: 0.5rem;

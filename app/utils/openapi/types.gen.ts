@@ -5,6 +5,233 @@ export type ClientOptions = {
 };
 
 /**
+ * CompetitionCreateRequest
+ */
+export type CompetitionCreateRequest = {
+  /**
+   * Ends At
+   */
+  ends_at: string;
+  /**
+   * Gender
+   */
+  gender: 'male' | 'female';
+  /**
+   * Name
+   */
+  name: string;
+  /**
+   * Referee Ids
+   */
+  referee_ids: Array<number>;
+  /**
+   * Sport Id
+   */
+  sport_id: number;
+  /**
+   * Starts At
+   */
+  starts_at: string;
+  /**
+   * Teams
+   */
+  teams: Array<CompetitionTeamRequest>;
+};
+
+/**
+ * CompetitionDetailResponse
+ */
+export type CompetitionDetailResponse = {
+  /**
+   * Created At
+   */
+  created_at: string;
+  /**
+   * Disabled At
+   */
+  disabled_at: string | null;
+  /**
+   * Ends At
+   */
+  ends_at: string;
+  /**
+   * Gender
+   */
+  gender: 'male' | 'female';
+  /**
+   * Id
+   */
+  id: number;
+  /**
+   * Is Enabled
+   */
+  is_enabled: boolean;
+  /**
+   * Name
+   */
+  name: string;
+  /**
+   * Referees
+   */
+  referees: Array<RefereeSummaryResponse>;
+  sport: SportResponse;
+  /**
+   * Starts At
+   */
+  starts_at: string;
+  /**
+   * Status
+   */
+  status: 'scheduled' | 'in_progress' | 'finished' | 'discarded';
+  /**
+   * Team Count
+   */
+  team_count: number;
+  /**
+   * Teams
+   */
+  teams: Array<CompetitionTeamResponse>;
+};
+
+/**
+ * CompetitionListResponse
+ */
+export type CompetitionListResponse = {
+  /**
+   * Competitions
+   */
+  competitions: Array<CompetitionSummaryResponse>;
+  pagination: CompetitionPaginationResponse;
+};
+
+/**
+ * CompetitionPaginationResponse
+ */
+export type CompetitionPaginationResponse = {
+  /**
+   * Page
+   */
+  page: number;
+  /**
+   * Per Page
+   */
+  per_page: number;
+  /**
+   * Total Items
+   */
+  total_items: number;
+  /**
+   * Total Pages
+   */
+  total_pages: number;
+};
+
+/**
+ * CompetitionSummaryResponse
+ */
+export type CompetitionSummaryResponse = {
+  /**
+   * Created At
+   */
+  created_at: string;
+  /**
+   * Disabled At
+   */
+  disabled_at: string | null;
+  /**
+   * Ends At
+   */
+  ends_at: string;
+  /**
+   * Gender
+   */
+  gender: 'male' | 'female';
+  /**
+   * Id
+   */
+  id: number;
+  /**
+   * Is Enabled
+   */
+  is_enabled: boolean;
+  /**
+   * Name
+   */
+  name: string;
+  sport: SportResponse;
+  /**
+   * Starts At
+   */
+  starts_at: string;
+  /**
+   * Status
+   */
+  status: 'scheduled' | 'in_progress' | 'finished' | 'discarded';
+  /**
+   * Team Count
+   */
+  team_count: number;
+};
+
+/**
+ * CompetitionTeamRequest
+ */
+export type CompetitionTeamRequest = {
+  /**
+   * Player Ids
+   */
+  player_ids: Array<number>;
+  /**
+   * Team Id
+   */
+  team_id: number;
+};
+
+/**
+ * CompetitionTeamResponse
+ */
+export type CompetitionTeamResponse = {
+  /**
+   * Gender Category
+   */
+  gender_category: 'male' | 'female';
+  /**
+   * Id
+   */
+  id: number;
+  /**
+   * Is Enabled
+   */
+  is_enabled: boolean;
+  /**
+   * Name
+   */
+  name: string;
+  /**
+   * Roster
+   */
+  roster: Array<RosterPlayerResponse>;
+};
+
+/**
+ * CompetitionUpdateRequest
+ */
+export type CompetitionUpdateRequest = {
+  /**
+   * Ends At
+   */
+  ends_at: string;
+  /**
+   * Name
+   */
+  name: string;
+  /**
+   * Starts At
+   */
+  starts_at: string;
+};
+
+/**
  * ErrorBody
  */
 export type ErrorBody = {
@@ -40,6 +267,74 @@ export type LoginRequest = {
 };
 
 /**
+ * MatchCompetitionResponse
+ */
+export type MatchCompetitionResponse = {
+  /**
+   * Id
+   */
+  id: number;
+  /**
+   * Name
+   */
+  name: string;
+};
+
+/**
+ * MatchListResponse
+ */
+export type MatchListResponse = {
+  /**
+   * Matches
+   */
+  matches: Array<MatchResponse>;
+};
+
+/**
+ * MatchResponse
+ */
+export type MatchResponse = {
+  competition: MatchCompetitionResponse;
+  /**
+   * Ends At
+   */
+  ends_at: string | null;
+  /**
+   * Id
+   */
+  id: number;
+  referee: RefereeSummaryResponse;
+  /**
+   * Round Number
+   */
+  round_number: number;
+  /**
+   * Starts At
+   */
+  starts_at: string | null;
+  /**
+   * Status
+   */
+  status: 'incomplete' | 'scheduled' | 'in_progress' | 'finished';
+  team_1: CompetitionTeamResponse;
+  team_2: CompetitionTeamResponse;
+};
+
+/**
+ * MatchUpdateRequest
+ */
+export type MatchUpdateRequest = {
+  /**
+   * Ends At
+   */
+  ends_at: string;
+  /**
+   * Starts At
+   */
+  starts_at: string;
+};
+
+/**
  * PaginationResponse
  */
 export type PaginationResponse = {
@@ -59,6 +354,20 @@ export type PaginationResponse = {
    * Total Pages
    */
   total_pages: number;
+};
+
+/**
+ * ParticipantsRequest
+ */
+export type ParticipantsRequest = {
+  /**
+   * Referee Ids
+   */
+  referee_ids: Array<number>;
+  /**
+   * Teams
+   */
+  teams: Array<CompetitionTeamRequest>;
 };
 
 /**
@@ -114,6 +423,50 @@ export type PlayerPaginationResponse = {
    * Total Pages
    */
   total_pages: number;
+};
+
+/**
+ * PlayerPhotoListResponse
+ */
+export type PlayerPhotoListResponse = {
+  /**
+   * Photos
+   */
+  photos: Array<PlayerPhotoResponse>;
+};
+
+/**
+ * PlayerPhotoResponse
+ */
+export type PlayerPhotoResponse = {
+  /**
+   * Content Type
+   */
+  content_type: 'image/jpeg' | 'image/png';
+  /**
+   * Created At
+   */
+  created_at: string;
+  /**
+   * Id
+   */
+  id: number;
+  /**
+   * Player Id
+   */
+  player_id: number;
+};
+
+/**
+ * PlayerPhotoUploadForm
+ */
+export type PlayerPhotoUploadForm = {
+  /**
+   * Photo
+   *
+   * Exactly one PNG or JPG file of at most 5 MB, between 320 and 4096 pixels per side, with no more than 12000000 pixels and exactly one detected face of at least 160 by 160 pixels.
+   */
+  photo: Blob | File;
 };
 
 /**
@@ -177,6 +530,93 @@ export type PlayerUpdateRequest = {
    * Team Ids
    */
   team_ids: Array<number>;
+};
+
+/**
+ * RefereeListResponse
+ */
+export type RefereeListResponse = {
+  pagination: RefereePaginationResponse;
+  /**
+   * Referees
+   */
+  referees: Array<RefereeLookupResponse>;
+};
+
+/**
+ * RefereeLookupResponse
+ */
+export type RefereeLookupResponse = {
+  /**
+   * Email
+   */
+  email: string;
+  /**
+   * Id
+   */
+  id: number;
+  /**
+   * Name
+   */
+  name: string;
+};
+
+/**
+ * RefereePaginationResponse
+ */
+export type RefereePaginationResponse = {
+  /**
+   * Page
+   */
+  page: number;
+  /**
+   * Per Page
+   */
+  per_page: number;
+  /**
+   * Total Items
+   */
+  total_items: number;
+  /**
+   * Total Pages
+   */
+  total_pages: number;
+};
+
+/**
+ * RefereeSummaryResponse
+ */
+export type RefereeSummaryResponse = {
+  /**
+   * Id
+   */
+  id: number;
+  /**
+   * Name
+   */
+  name: string;
+};
+
+/**
+ * RosterPlayerResponse
+ */
+export type RosterPlayerResponse = {
+  /**
+   * Gender
+   */
+  gender: 'male' | 'female';
+  /**
+   * Id
+   */
+  id: number;
+  /**
+   * Is Enabled
+   */
+  is_enabled: boolean;
+  /**
+   * Name
+   */
+  name: string;
 };
 
 /**
@@ -704,6 +1144,583 @@ export type AuthSignupResponses = {
 
 export type AuthSignupResponse = AuthSignupResponses[keyof AuthSignupResponses];
 
+export type CompetitionsListData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * Search
+     */
+    search?: string | null;
+    /**
+     * Sport Id
+     */
+    sport_id?: number | null;
+    /**
+     * Gender
+     */
+    gender?: 'male' | 'female' | null;
+    /**
+     * Lifecycle Status
+     */
+    lifecycle_status?: 'scheduled' | 'in_progress' | 'finished' | 'discarded' | null;
+    /**
+     * Availability
+     */
+    availability?: 'enabled' | 'disabled' | 'all';
+    /**
+     * Starts From
+     */
+    starts_from?: string | null;
+    /**
+     * Starts To
+     */
+    starts_to?: string | null;
+    /**
+     * Sort
+     */
+    sort?: 'starts_at_asc' | 'starts_at_desc';
+    /**
+     * Page
+     */
+    page?: number;
+  };
+  url: '/competitions';
+};
+
+export type CompetitionsListErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Unprocessable Entity
+   */
+  422: ErrorResponse;
+  /**
+   * Service Unavailable
+   */
+  503: ErrorResponse;
+};
+
+export type CompetitionsListError = CompetitionsListErrors[keyof CompetitionsListErrors];
+
+export type CompetitionsListResponses = {
+  /**
+   * OK
+   */
+  200: CompetitionListResponse;
+};
+
+export type CompetitionsListResponse = CompetitionsListResponses[keyof CompetitionsListResponses];
+
+export type CompetitionsCreateData = {
+  body: CompetitionCreateRequest;
+  path?: never;
+  query?: never;
+  url: '/competitions';
+};
+
+export type CompetitionsCreateErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Conflict
+   */
+  409: ErrorResponse;
+  /**
+   * Unprocessable Entity
+   */
+  422: ErrorResponse;
+  /**
+   * Service Unavailable
+   */
+  503: ErrorResponse;
+};
+
+export type CompetitionsCreateError = CompetitionsCreateErrors[keyof CompetitionsCreateErrors];
+
+export type CompetitionsCreateResponses = {
+  /**
+   * Created
+   */
+  201: CompetitionDetailResponse;
+};
+
+export type CompetitionsCreateResponse = CompetitionsCreateResponses[keyof CompetitionsCreateResponses];
+
+export type CompetitionsGetData = {
+  body?: never;
+  path: {
+    /**
+     * Competition Id
+     */
+    competition_id: number;
+  };
+  query?: never;
+  url: '/competitions/{competition_id}';
+};
+
+export type CompetitionsGetErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Unprocessable Entity
+   */
+  422: ErrorResponse;
+  /**
+   * Service Unavailable
+   */
+  503: ErrorResponse;
+};
+
+export type CompetitionsGetError = CompetitionsGetErrors[keyof CompetitionsGetErrors];
+
+export type CompetitionsGetResponses = {
+  /**
+   * OK
+   */
+  200: CompetitionDetailResponse;
+};
+
+export type CompetitionsGetResponse = CompetitionsGetResponses[keyof CompetitionsGetResponses];
+
+export type CompetitionsUpdateData = {
+  body: CompetitionUpdateRequest;
+  path: {
+    /**
+     * Competition Id
+     */
+    competition_id: number;
+  };
+  query?: never;
+  url: '/competitions/{competition_id}';
+};
+
+export type CompetitionsUpdateErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Conflict
+   */
+  409: ErrorResponse;
+  /**
+   * Unprocessable Entity
+   */
+  422: ErrorResponse;
+  /**
+   * Service Unavailable
+   */
+  503: ErrorResponse;
+};
+
+export type CompetitionsUpdateError = CompetitionsUpdateErrors[keyof CompetitionsUpdateErrors];
+
+export type CompetitionsUpdateResponses = {
+  /**
+   * OK
+   */
+  200: CompetitionDetailResponse;
+};
+
+export type CompetitionsUpdateResponse = CompetitionsUpdateResponses[keyof CompetitionsUpdateResponses];
+
+export type CompetitionsDisableData = {
+  body?: never;
+  path: {
+    /**
+     * Competition Id
+     */
+    competition_id: number;
+  };
+  query?: never;
+  url: '/competitions/{competition_id}/disable';
+};
+
+export type CompetitionsDisableErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Conflict
+   */
+  409: ErrorResponse;
+  /**
+   * Unprocessable Entity
+   */
+  422: ErrorResponse;
+  /**
+   * Service Unavailable
+   */
+  503: ErrorResponse;
+};
+
+export type CompetitionsDisableError = CompetitionsDisableErrors[keyof CompetitionsDisableErrors];
+
+export type CompetitionsDisableResponses = {
+  /**
+   * OK
+   */
+  200: CompetitionDetailResponse;
+};
+
+export type CompetitionsDisableResponse = CompetitionsDisableResponses[keyof CompetitionsDisableResponses];
+
+export type CompetitionsEnableData = {
+  body?: never;
+  path: {
+    /**
+     * Competition Id
+     */
+    competition_id: number;
+  };
+  query?: never;
+  url: '/competitions/{competition_id}/enable';
+};
+
+export type CompetitionsEnableErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Conflict
+   */
+  409: ErrorResponse;
+  /**
+   * Unprocessable Entity
+   */
+  422: ErrorResponse;
+  /**
+   * Service Unavailable
+   */
+  503: ErrorResponse;
+};
+
+export type CompetitionsEnableError = CompetitionsEnableErrors[keyof CompetitionsEnableErrors];
+
+export type CompetitionsEnableResponses = {
+  /**
+   * OK
+   */
+  200: CompetitionDetailResponse;
+};
+
+export type CompetitionsEnableResponse = CompetitionsEnableResponses[keyof CompetitionsEnableResponses];
+
+export type MatchesListData = {
+  body?: never;
+  path: {
+    /**
+     * Competition Id
+     */
+    competition_id: number;
+  };
+  query?: never;
+  url: '/competitions/{competition_id}/matches';
+};
+
+export type MatchesListErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Unprocessable Entity
+   */
+  422: ErrorResponse;
+  /**
+   * Service Unavailable
+   */
+  503: ErrorResponse;
+};
+
+export type MatchesListError = MatchesListErrors[keyof MatchesListErrors];
+
+export type MatchesListResponses = {
+  /**
+   * OK
+   */
+  200: MatchListResponse;
+};
+
+export type MatchesListResponse = MatchesListResponses[keyof MatchesListResponses];
+
+export type MatchesRandomizeData = {
+  body?: never;
+  path: {
+    /**
+     * Competition Id
+     */
+    competition_id: number;
+  };
+  query?: never;
+  url: '/competitions/{competition_id}/matches/randomize';
+};
+
+export type MatchesRandomizeErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Conflict
+   */
+  409: ErrorResponse;
+  /**
+   * Unprocessable Entity
+   */
+  422: ErrorResponse;
+  /**
+   * Service Unavailable
+   */
+  503: ErrorResponse;
+};
+
+export type MatchesRandomizeError = MatchesRandomizeErrors[keyof MatchesRandomizeErrors];
+
+export type MatchesRandomizeResponses = {
+  /**
+   * OK
+   */
+  200: MatchListResponse;
+};
+
+export type MatchesRandomizeResponse = MatchesRandomizeResponses[keyof MatchesRandomizeResponses];
+
+export type CompetitionsReplaceParticipantsData = {
+  body: ParticipantsRequest;
+  path: {
+    /**
+     * Competition Id
+     */
+    competition_id: number;
+  };
+  query?: never;
+  url: '/competitions/{competition_id}/participants';
+};
+
+export type CompetitionsReplaceParticipantsErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Conflict
+   */
+  409: ErrorResponse;
+  /**
+   * Unprocessable Entity
+   */
+  422: ErrorResponse;
+  /**
+   * Service Unavailable
+   */
+  503: ErrorResponse;
+};
+
+export type CompetitionsReplaceParticipantsError = CompetitionsReplaceParticipantsErrors[keyof CompetitionsReplaceParticipantsErrors];
+
+export type CompetitionsReplaceParticipantsResponses = {
+  /**
+   * OK
+   */
+  200: CompetitionDetailResponse;
+};
+
+export type CompetitionsReplaceParticipantsResponse = CompetitionsReplaceParticipantsResponses[keyof CompetitionsReplaceParticipantsResponses];
+
+export type MatchesGetData = {
+  body?: never;
+  path: {
+    /**
+     * Match Id
+     */
+    match_id: number;
+  };
+  query?: never;
+  url: '/matches/{match_id}';
+};
+
+export type MatchesGetErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Unprocessable Entity
+   */
+  422: ErrorResponse;
+  /**
+   * Service Unavailable
+   */
+  503: ErrorResponse;
+};
+
+export type MatchesGetError = MatchesGetErrors[keyof MatchesGetErrors];
+
+export type MatchesGetResponses = {
+  /**
+   * OK
+   */
+  200: MatchResponse;
+};
+
+export type MatchesGetResponse = MatchesGetResponses[keyof MatchesGetResponses];
+
+export type MatchesUpdateData = {
+  body: MatchUpdateRequest;
+  path: {
+    /**
+     * Match Id
+     */
+    match_id: number;
+  };
+  query?: never;
+  url: '/matches/{match_id}';
+};
+
+export type MatchesUpdateErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Conflict
+   */
+  409: ErrorResponse;
+  /**
+   * Unprocessable Entity
+   */
+  422: ErrorResponse;
+  /**
+   * Service Unavailable
+   */
+  503: ErrorResponse;
+};
+
+export type MatchesUpdateError = MatchesUpdateErrors[keyof MatchesUpdateErrors];
+
+export type MatchesUpdateResponses = {
+  /**
+   * OK
+   */
+  200: MatchResponse;
+};
+
+export type MatchesUpdateResponse = MatchesUpdateResponses[keyof MatchesUpdateResponses];
+
 export type PlayersListData = {
   body?: never;
   path?: never;
@@ -1016,6 +2033,260 @@ export type PlayersEnableResponses = {
 };
 
 export type PlayersEnableResponse = PlayersEnableResponses[keyof PlayersEnableResponses];
+
+export type PlayerPhotosListData = {
+  body?: never;
+  path: {
+    /**
+     * Player Id
+     */
+    player_id: number;
+  };
+  query?: never;
+  url: '/players/{player_id}/photos';
+};
+
+export type PlayerPhotosListErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Unprocessable Entity
+   */
+  422: ErrorResponse;
+  /**
+   * Service Unavailable
+   */
+  503: ErrorResponse;
+};
+
+export type PlayerPhotosListError = PlayerPhotosListErrors[keyof PlayerPhotosListErrors];
+
+export type PlayerPhotosListResponses = {
+  /**
+   * OK
+   */
+  200: PlayerPhotoListResponse;
+};
+
+export type PlayerPhotosListResponse = PlayerPhotosListResponses[keyof PlayerPhotosListResponses];
+
+export type PlayerPhotosUploadData = {
+  body: PlayerPhotoUploadForm;
+  path: {
+    /**
+     * Player Id
+     */
+    player_id: number;
+  };
+  query?: never;
+  url: '/players/{player_id}/photos';
+};
+
+export type PlayerPhotosUploadErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Conflict
+   */
+  409: ErrorResponse;
+  /**
+   * Request Entity Too Large
+   */
+  413: ErrorResponse;
+  /**
+   * Unsupported Media Type
+   */
+  415: ErrorResponse;
+  /**
+   * Unprocessable Entity
+   */
+  422: ErrorResponse;
+  /**
+   * Service Unavailable
+   */
+  503: ErrorResponse;
+};
+
+export type PlayerPhotosUploadError = PlayerPhotosUploadErrors[keyof PlayerPhotosUploadErrors];
+
+export type PlayerPhotosUploadResponses = {
+  /**
+   * Created
+   */
+  201: PlayerPhotoResponse;
+};
+
+export type PlayerPhotosUploadResponse = PlayerPhotosUploadResponses[keyof PlayerPhotosUploadResponses];
+
+export type PlayerPhotosDeleteData = {
+  body?: never;
+  path: {
+    /**
+     * Player Id
+     */
+    player_id: number;
+    /**
+     * Photo Id
+     */
+    photo_id: number;
+  };
+  query?: never;
+  url: '/players/{player_id}/photos/{photo_id}';
+};
+
+export type PlayerPhotosDeleteErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Unprocessable Entity
+   */
+  422: ErrorResponse;
+  /**
+   * Service Unavailable
+   */
+  503: ErrorResponse;
+};
+
+export type PlayerPhotosDeleteError = PlayerPhotosDeleteErrors[keyof PlayerPhotosDeleteErrors];
+
+export type PlayerPhotosDeleteResponses = {
+  /**
+   * No Content
+   */
+  204: void;
+};
+
+export type PlayerPhotosDeleteResponse = PlayerPhotosDeleteResponses[keyof PlayerPhotosDeleteResponses];
+
+export type PlayerPhotosGetImageData = {
+  body?: never;
+  path: {
+    /**
+     * Player Id
+     */
+    player_id: number;
+    /**
+     * Photo Id
+     */
+    photo_id: number;
+  };
+  query?: never;
+  url: '/players/{player_id}/photos/{photo_id}';
+};
+
+export type PlayerPhotosGetImageErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Unprocessable Entity
+   */
+  422: ErrorResponse;
+  /**
+   * Service Unavailable
+   */
+  503: ErrorResponse;
+};
+
+export type PlayerPhotosGetImageError = PlayerPhotosGetImageErrors[keyof PlayerPhotosGetImageErrors];
+
+export type PlayerPhotosGetImageResponses = {
+  /**
+   * The stored PNG or JPG image.
+   */
+  200: Blob | File;
+};
+
+export type PlayerPhotosGetImageResponse = PlayerPhotosGetImageResponses[keyof PlayerPhotosGetImageResponses];
+
+export type RefereesListData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * Search
+     */
+    search?: string | null;
+    /**
+     * Page
+     */
+    page?: number;
+  };
+  url: '/referees';
+};
+
+export type RefereesListErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Unprocessable Entity
+   */
+  422: ErrorResponse;
+  /**
+   * Service Unavailable
+   */
+  503: ErrorResponse;
+};
+
+export type RefereesListError = RefereesListErrors[keyof RefereesListErrors];
+
+export type RefereesListResponses = {
+  /**
+   * OK
+   */
+  200: RefereeListResponse;
+};
+
+export type RefereesListResponse = RefereesListResponses[keyof RefereesListResponses];
 
 export type SportsListData = {
   body?: never;

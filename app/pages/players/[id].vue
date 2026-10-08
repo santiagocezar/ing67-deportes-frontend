@@ -1,18 +1,41 @@
-
 <script setup lang="ts">
+import {
+    type TeamsListResponse,
+    type PlayerResponse as Player,
+    type PlayerPhotoListResponse,
+} from "~/utils/openapi";
 
-import { type TeamsListResponse, type PlayerResponse as Player } from "~/utils/openapi";
-const route = useRoute()
-const {data: editing, refresh} = await useAPI<Player>(() => `/players/${route.params.id}`)
+import Subtract from "~icons/fluent/subtract-circle-48-filled";
+import Checkmark from "~icons/fluent/checkmark-circle-48-filled";
+import Gallery from "~/components/Gallery.vue";
 
+const route = useRoute();
+
+const {
+    public: { apiBase },
+} = useRuntimeConfig();
+
+const { data: editing, refresh } = await useAPI<Player>(
+    () => `/players/${route.params.id}`,
+);
+
+const { data: photos, refresh: refreshPhotos } =
+    await useAPI<PlayerPhotoListResponse>(
+        () => `/players/${route.params.id}/photos`,
+    );
+
+const currentPhotos = computed(() =>
+    (photos.value?.photos ?? []).map(
+        (p) => `${apiBase}/players/${route.params.id}/photos/${p.id}`,
+    ),
+);
+let pendingPhotos: string[] = reactive([]);
 
 const message = ref("");
 
 const { $api } = useNuxtApp();
 
-
 const MAX_PLAYER_TEAMS = 3;
-
 
 const { data: editTeamsData } = await useAPI<TeamsListResponse>("/teams", {
     query: computed(() => ({
@@ -24,37 +47,11 @@ const { data: editTeamsData } = await useAPI<TeamsListResponse>("/teams", {
     enabled: computed(() => editing.value !== null),
 });
 
-
 function genderLabel(gender: Player["gender"]) {
     return gender === "male" ? "Masculino" : "Femenino";
 }
 
-const edited = reactive<{ name: string; team_ids: number[] }>({
-    name: "",
-    team_ids: [],
-});
-        edited.name = editing.value!.name;
-        edited.team_ids = editing.value!.teams.map((team) => team.id);
-
-
-async function startEdit(player: Player) {
-    message.value = "";
-
-    try {
-        // Se relee el jugador para editar sobre el estado actual.
-        const current = await $api<Player>(`/players/${player.id}`);
-
-        editing.value = current;
-    } catch (error) {
-        reportError(error);
-    }
-}
-
-function cancelEdit() {
-    editing.value = undefined;
-    edited.name = "";
-    edited.team_ids = [];
-}
+const team_ids = computed(() => editing.value!.teams.map((team) => team.id));
 
 async function savePlayer(ev: SubmitEvent) {
     ev.preventDefault();
@@ -65,8 +62,8 @@ async function savePlayer(ev: SubmitEvent) {
         await $api(`/players/${editing.value.id}`, {
             method: "PUT",
             body: {
-                name: edited.name,
-                team_ids: [...edited.team_ids],
+                name: editing.value.name,
+                team_ids: [...team_ids.value],
             },
         });
     } catch (error) {
@@ -74,17 +71,19 @@ async function savePlayer(ev: SubmitEvent) {
         return;
     }
 
-    cancelEdit();
     refresh();
 }
 
-async function setPlayerEnabled(player: Player, enabled: boolean) {
+async function setPlayerEnabled(enabled: boolean) {
     message.value = "";
 
     try {
-        await $api(`/players/${player.id}/${enabled ? "enable" : "disable"}`, {
-            method: "PATCH",
-        });
+        await $api(
+            `/players/${route.params.id}/${enabled ? "enable" : "disable"}`,
+            {
+                method: "PATCH",
+            },
+        );
     } catch (error) {
         reportError(error);
         return;
@@ -93,69 +92,99 @@ async function setPlayerEnabled(player: Player, enabled: boolean) {
     refresh();
 }
 
-function toggleTeam(team_ids: number[], id: number) {
-    const index = team_ids.indexOf(id);
+function toggleTeam(id: number) {
+    const index = team_ids.value.indexOf(id);
 
     if (index === -1) {
-        if (team_ids.length >= MAX_PLAYER_TEAMS) return;
-        team_ids.push(id);
+        if (team_ids.value.length >= MAX_PLAYER_TEAMS) return;
+        team_ids.value.push(id);
     } else {
-        team_ids.splice(index, 1);
+        team_ids.value.splice(index, 1);
     }
 }
 
+async function addPhoto(file: File) {
+    const data = new FormData();
 
+    data.set("photo", file);
 
+    pendingPhotos.push(URL.createObjectURL(file));
+
+    await $api(`/players/${route.params.id}/photos`, {
+        method: "POST",
+        body: data,
+    });
+
+    await refreshPhotos();
+
+    pendingPhotos.length = 0;
+}
 </script>
 <template>
-
     <p class="notification is-danger" v-if="message">{{ message }}</p>
-            <form class="box" action="#" @submit="savePlayer">
-                <p class="title is-5">Editar jugador #{{ editing?.id }}</p>
-                <p>
-                    {{ editing?.sport.name }} ·
-                    {{ genderLabel(editing?.gender!) }}
-                </p>
-                <br />
-                <label class="field">
-                    <span class="label">Nombre</span>
-                    <input
-                        class="input"
-                        v-model="edited.name"
-                        type="text"
-                        required
-                    />
-                </label>
-                <br />
-                <div class="field">
-                    <span class="label">
-                        Equipos (hasta {{ MAX_PLAYER_TEAMS }})
-                    </span>
-                    <p v-if="!editTeamsData?.teams.length">
-                        No hay equipos habilitados para esa combinación.
-                    </p>
-                    <label
-                        class="checkbox"
-                        v-for="team in editTeamsData?.teams"
-                        :key="team.id"
-                    >
-                        <input
-                            type="checkbox"
-                            :checked="edited.team_ids.includes(team.id)"
-                            :disabled="
-                                !edited.team_ids.includes(team.id) &&
-                                edited.team_ids.length >= MAX_PLAYER_TEAMS
-                            "
-                            @change="toggleTeam(edited.team_ids, team.id)"
-                        />
-                        {{ team.name }}
-                    </label>
-                </div>
-                <br />
-                <button class="button is-primary">Guardar cambios</button>
-                <button class="button" type="button" @click="cancelEdit">
-                    Cancelar
-                </button>
-            </form>
+    <form v-if="editing" class="box" action="#" @submit="savePlayer">
+        <p class="title is-5">Editar jugador #{{ editing.id }}</p>
+        <p>
+            {{ editing.sport.name }} ·
+            {{ genderLabel(editing.gender!) }}
+        </p>
+        <br />
+        <label class="field">
+            <span class="label">Nombre</span>
+            <input class="input" v-model="editing.name" type="text" required />
+        </label>
+        <br />
+        <div class="field">
+            <span class="label"> Equipos (hasta {{ MAX_PLAYER_TEAMS }}) </span>
+            <p v-if="!editTeamsData?.teams.length">
+                No hay equipos habilitados para esa combinación.
+            </p>
+            <label
+                class="checkbox"
+                v-for="team in editTeamsData?.teams"
+                :key="team.id"
+            >
+                <input
+                    type="checkbox"
+                    :checked="team_ids.includes(team.id)"
+                    :disabled="
+                        !team_ids.includes(team.id) &&
+                        team_ids.length >= MAX_PLAYER_TEAMS
+                    "
+                    @change="toggleTeam(team.id)"
+                />
+                {{ team.name }}
+            </label>
+        </div>
+        <br />
 
+        <div class="is-flex">
+            <button
+                class="button"
+                aria-label="Deshabilitar"
+                v-if="editing.is_enabled"
+                @click="setPlayerEnabled(false)"
+            >
+                <span class="icon is-small has-text-danger">
+                    <Subtract />
+                </span>
+                <span> Deshabilitar </span>
+            </button>
+
+            <button
+                class="button"
+                aria-label="Habilitar"
+                v-else
+                @click="setPlayerEnabled(true)"
+            >
+                <span class="icon is-small has-text-success">
+                    <Checkmark />
+                </span>
+                Habilitar
+            </button>
+            <div class="is-flex-grow-1"></div>
+            <button class="button is-primary">Guardar cambios</button>
+        </div>
+    </form>
+    <Gallery :currentPhotos :pendingPhotos editing @add="addPhoto" />
 </template>
