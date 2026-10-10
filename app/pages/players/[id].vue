@@ -37,6 +37,7 @@ const photoError = ref("");
 const { $api } = useNuxtApp();
 
 const MAX_PLAYER_TEAMS = 3;
+const MAX_PHOTOS = 3;
 
 const { data: editTeamsData } = await useAPI<TeamsListResponse>("/teams", {
     query: computed(() => ({
@@ -201,6 +202,7 @@ async function addPhoto(file: File) {
         :photoError
         :currentPhotos
         :pendingPhotos
+        :max="MAX_PHOTOS"
         editing
         @add="addPhoto"
         @delete="deletePhoto"

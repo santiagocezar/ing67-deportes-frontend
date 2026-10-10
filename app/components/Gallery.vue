@@ -9,11 +9,14 @@ const emit = defineEmits<{
     (e: "add", file: File): void;
 }>();
 
-let { photoError, currentPhotos, pendingPhotos } = defineProps<{
+let { max, photoError, currentPhotos, pendingPhotos } = defineProps<{
+    max: number;
     photoError: string;
     currentPhotos: string[];
     pendingPhotos: string[];
 }>();
+
+const disabled = computed(() => currentPhotos.length >= max);
 
 const photos = computed(() => [
     ...currentPhotos.map((src) => ({ pending: false, src })),
@@ -47,11 +50,11 @@ function onCameraUpload(blob: Blob | null) {
 
 <template>
     <header class="mb-2 is-flex is-align-items-center">
-        <p class="title m-0 is-5">Fotos</p>
+        <p class="title m-0 is-5">Fotos (máx. {{ max }})</p>
         <div class="is-flex-grow-1"></div>
         <div class="gallery__dropzone">
             <label class="gallery__upload">
-                <div class="button is-primary">
+                <div :disabled="disabled || null" class="button is-primary">
                     <span class="icon">
                         <ImageAdd />
                     </span>
@@ -61,6 +64,7 @@ function onCameraUpload(blob: Blob | null) {
                     class="gallery__file"
                     type="file"
                     multiple
+                    :disabled
                     :accept="accept.join(',')"
                     @change="onImageUpload"
                 />
@@ -68,6 +72,7 @@ function onCameraUpload(blob: Blob | null) {
             <button
                 class="button is-primary"
                 type="button"
+                :disabled
                 @click="capturing = true"
             >
                 <span>Tomar</span>
@@ -88,7 +93,9 @@ function onCameraUpload(blob: Blob | null) {
             :key="src"
             class="gallery__item"
         >
-            <img class="gallery__photo" :src alt="" />
+            <a :href="src">
+                <img class="gallery__photo" :src alt="" />
+            </a>
             <button
                 v-if="pending"
                 disabled
