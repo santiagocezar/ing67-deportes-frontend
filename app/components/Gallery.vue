@@ -83,7 +83,7 @@ function onCameraUpload(blob: Blob | null) {
         </div>
     </header>
 
-    <div v-if="photoError" class="notification is-danger">
+    <div v-if="photoError" class="mb-2 notification is-danger">
         {{ photoError }}
     </div>
 

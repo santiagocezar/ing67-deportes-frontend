@@ -133,78 +133,85 @@ async function addPhoto(file: File) {
 }
 </script>
 <template>
-    <p class="notification is-danger" v-if="message">{{ message }}</p>
-    <form v-if="editing" class="box" action="#" @submit="savePlayer">
-        <p class="title is-5">Editar jugador #{{ editing.id }}</p>
-        <p>
-            {{ editing.sport.name }} ·
-            {{ genderLabel(editing.gender!) }}
-        </p>
-        <br />
-        <label class="field">
-            <span class="label">Nombre</span>
-            <input class="input" v-model="editing.name" type="text" required />
-        </label>
-        <br />
-        <div class="field">
-            <span class="label"> Equipos (hasta {{ MAX_PLAYER_TEAMS }}) </span>
-            <p v-if="!editTeamsData?.teams.length">
-                No hay equipos habilitados para esa combinación.
-            </p>
-            <label
-                class="checkbox"
-                v-for="team in editTeamsData?.teams"
-                :key="team.id"
-            >
+    <div class="container p-4">
+        <p class="notification is-danger" v-if="message">{{ message }}</p>
+        <form v-if="editing" class="mb-3" action="#" @submit="savePlayer">
+            <p class="title is-5">Detalles del Jugador #{{ editing.id }}</p>
+            <label class="field">
+                <span class="label">Nombre</span>
                 <input
-                    type="checkbox"
-                    :checked="team_ids.includes(team.id)"
-                    :disabled="
-                        !team_ids.includes(team.id) &&
-                        team_ids.length >= MAX_PLAYER_TEAMS
-                    "
-                    @change="toggleTeam(team.id)"
+                    class="input"
+                    v-model="editing.name"
+                    type="text"
+                    required
                 />
-                {{ team.name }}
             </label>
-        </div>
-        <br />
 
-        <div class="is-flex">
-            <button
-                class="button"
-                aria-label="Deshabilitar"
-                v-if="editing.is_enabled"
-                @click="setPlayerEnabled(false)"
-            >
-                <span class="icon is-small has-text-danger">
-                    <Subtract />
-                </span>
-                <span> Deshabilitar </span>
-            </button>
+            <br />
+            <br />
+            <p>
+                Juega:
+                <a :href="`/sports/${editing.sport.id}`">
+                    {{ editing.sport.name }}
+                    {{ genderLabel(editing.gender!) }}
+                </a>
+            </p>
 
-            <button
-                class="button"
-                aria-label="Habilitar"
-                v-else
-                @click="setPlayerEnabled(true)"
-            >
-                <span class="icon is-small has-text-success">
-                    <Checkmark />
+            <div class="field">
+                <span class="label">
+                    Selección de equipos (máx. {{ MAX_PLAYER_TEAMS }})
                 </span>
-                <span> Habilitar </span>
-            </button>
-            <div class="is-flex-grow-1"></div>
-            <button class="button is-primary">Guardar cambios</button>
-        </div>
-    </form>
-    <Gallery
-        :photoError
-        :currentPhotos
-        :pendingPhotos
-        :max="MAX_PHOTOS"
-        editing
-        @add="addPhoto"
-        @delete="deletePhoto"
-    />
+                <p v-if="!editTeamsData?.teams.length">
+                    No hay equipos habilitados para esa combinación.
+                </p>
+                <label
+                    class="checkbox"
+                    v-for="team in editTeamsData?.teams"
+                    :key="team.id"
+                >
+                    <input
+                        type="checkbox"
+                        :checked="team_ids.includes(team.id)"
+                        :disabled="
+                            !team_ids.includes(team.id) &&
+                            team_ids.length >= MAX_PLAYER_TEAMS
+                        "
+                        @change="toggleTeam(team.id)"
+                    />
+                    {{ team.name }}
+                </label>
+            </div>
+
+            <div class="is-flex">
+                <button
+                    class="button"
+                    v-if="editing.is_enabled"
+                    @click="setPlayerEnabled(false)"
+                >
+                    <span class="icon is-small has-text-danger">
+                        <Subtract />
+                    </span>
+                    <span> Deshabilitar </span>
+                </button>
+
+                <button class="button" v-else @click="setPlayerEnabled(true)">
+                    <span class="icon is-small has-text-success">
+                        <Checkmark />
+                    </span>
+                    <span> Habilitar </span>
+                </button>
+                <div class="is-flex-grow-1"></div>
+                <button class="button is-primary">Actualizar datos</button>
+            </div>
+        </form>
+        <Gallery
+            :photoError
+            :currentPhotos
+            :pendingPhotos
+            :max="MAX_PHOTOS"
+            editing
+            @add="addPhoto"
+            @delete="deletePhoto"
+        />
+    </div>
 </template>
