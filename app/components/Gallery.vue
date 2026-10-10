@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import CameraIcon from "~icons/fluent/camera-24-filled";
 import ImageAdd from "~icons/fluent/image-add-48-filled";
+import Delete from "~icons/fluent/delete-24-regular";
 //     import { Add, Camera, Delete, ImageAdd } from "$lib/components/icons";
 
 const emit = defineEmits<{
@@ -8,8 +9,8 @@ const emit = defineEmits<{
     (e: "add", file: File): void;
 }>();
 
-let { currentPhotos, pendingPhotos, editing } = defineProps<{
-    editing?: boolean;
+let { photoError, currentPhotos, pendingPhotos } = defineProps<{
+    photoError: string;
     currentPhotos: string[];
     pendingPhotos: string[];
 }>();
@@ -45,10 +46,10 @@ function onCameraUpload(blob: Blob | null) {
 </script>
 
 <template>
-    <header class="is-flex is-align-items-center">
+    <header class="mb-2 is-flex is-align-items-center">
         <p class="title m-0 is-5">Fotos</p>
         <div class="is-flex-grow-1"></div>
-        <div v-if="editing" class="gallery__dropzone">
+        <div class="gallery__dropzone">
             <label class="gallery__upload">
                 <div class="button is-primary">
                     <span class="icon">
@@ -77,6 +78,10 @@ function onCameraUpload(blob: Blob | null) {
         </div>
     </header>
 
+    <div v-if="photoError" class="notification is-danger">
+        {{ photoError }}
+    </div>
+
     <div class="gallery">
         <div
             v-for="{ pending, src } in photos"
@@ -84,14 +89,25 @@ function onCameraUpload(blob: Blob | null) {
             class="gallery__item"
         >
             <img class="gallery__photo" :src alt="" />
-            <span v-if="pending">Pending</span>
             <button
-                v-if="editing"
-                class="gallery__delete"
+                v-if="pending"
+                disabled
+                class="button is-warning is-outlined is-inverted is-loading gallery__delete"
+                type="button"
+            >
+                <span class="icon">
+                    <Delete />
+                </span>
+            </button>
+            <button
+                v-else
+                class="button is-danger is-outlined is-inverted gallery__delete"
                 type="button"
                 @click="emit('delete', src)"
             >
-                <Delete />
+                <span class="icon">
+                    <Delete />
+                </span>
             </button>
         </div>
     </div>
@@ -141,14 +157,8 @@ function onCameraUpload(blob: Blob | null) {
 
 .gallery__delete {
     position: absolute;
-    right: 0.5rem;
-    bottom: 0.5rem;
-    padding: 0.5rem;
-    border: 0;
-    border-radius: 0.5rem;
-    background: #2a2a2a;
-    color: inherit;
-    cursor: pointer;
+    right: 0.25rem;
+    bottom: 0.25rem;
 }
 
 .gallery__upload {

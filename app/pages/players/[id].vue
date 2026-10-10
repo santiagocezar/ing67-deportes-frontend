@@ -32,6 +32,7 @@ const currentPhotos = computed(() =>
 let pendingPhotos: string[] = reactive([]);
 
 const message = ref("");
+const photoError = ref("");
 
 const { $api } = useNuxtApp();
 
@@ -103,21 +104,31 @@ function toggleTeam(id: number) {
     }
 }
 
+async function deletePhoto(url: string) {
+    await $api(url, {
+        method: "DELETE",
+    });
+
+    await refreshPhotos();
+}
 async function addPhoto(file: File) {
     const data = new FormData();
-
     data.set("photo", file);
 
     pendingPhotos.push(URL.createObjectURL(file));
 
-    await $api(`/players/${route.params.id}/photos`, {
-        method: "POST",
-        body: data,
-    });
-
-    await refreshPhotos();
-
-    pendingPhotos.length = 0;
+    try {
+        photoError.value = "";
+        await $api(`/players/${route.params.id}/photos`, {
+            method: "POST",
+            body: data,
+        });
+    } catch (err) {
+        photoError.value = getError(err);
+    } finally {
+        await refreshPhotos();
+        pendingPhotos.length = 0;
+    }
 }
 </script>
 <template>
@@ -180,11 +191,18 @@ async function addPhoto(file: File) {
                 <span class="icon is-small has-text-success">
                     <Checkmark />
                 </span>
-                Habilitar
+                <span> Habilitar </span>
             </button>
             <div class="is-flex-grow-1"></div>
             <button class="button is-primary">Guardar cambios</button>
         </div>
     </form>
-    <Gallery :currentPhotos :pendingPhotos editing @add="addPhoto" />
+    <Gallery
+        :photoError
+        :currentPhotos
+        :pendingPhotos
+        editing
+        @add="addPhoto"
+        @delete="deletePhoto"
+    />
 </template>

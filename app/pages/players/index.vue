@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import {
-    type TeamsListResponse,
     type PlayerResponse as Player,
     type PlayerListResponse,
     type SportsListResponse,
@@ -12,22 +11,6 @@ import Search from "~icons/fluent/search-48-filled";
 
 type PlayerStatus = "enabled" | "disabled" | "all";
 type PlayerSort = "name_asc" | "created_at_desc";
-
-interface PlayerTeam {
-    id: number;
-    name: string;
-}
-
-// interface Player {
-//     id: number;
-//     name: string;
-//     sport: Sport;
-//     gender: Gender;
-//     teams: PlayerTeam[];
-//     is_enabled: boolean;
-//     created_at: string
-//     disabled_at: string | null;
-// }
 
 const MAX_PLAYER_TEAMS = 3;
 
@@ -104,22 +87,6 @@ const { data: createTeamsData } = await useAPI<TeamListResponse>("/teams", {
         gender_category: value.gender,
     })),
     enabled: canPickCreateTeams,
-});
-
-const editing = ref<Player | null>(null);
-const edited = reactive<{ name: string; team_ids: number[] }>({
-    name: "",
-    team_ids: [],
-});
-
-const { data: editTeamsData } = await useAPI<TeamListResponse>("/teams", {
-    query: computed(() => ({
-        status: "enabled",
-        sort: "name_asc",
-        sport_id: editing.value?.sport.id,
-        gender_category: editing.value?.gender,
-    })),
-    enabled: computed(() => editing.value !== null),
 });
 
 const message = ref("");
@@ -202,27 +169,6 @@ async function addPlayer(ev: SubmitEvent) {
     value.gender = "";
     value.team_ids = [];
     refresh();
-}
-
-async function startEdit(player: Player) {
-    message.value = "";
-
-    try {
-        // Se relee el jugador para editar sobre el estado actual.
-        const current = await $api<Player>(`/players/${player.id}`);
-
-        editing.value = current;
-        edited.name = current.name;
-        edited.team_ids = current.teams.map((team) => team.id);
-    } catch (error) {
-        reportError(error);
-    }
-}
-
-function cancelEdit() {
-    editing.value = null;
-    edited.name = "";
-    edited.team_ids = [];
 }
 
 function goToPage(page: number) {
@@ -459,12 +405,6 @@ function goToPage(page: number) {
             jugadores)
         </p>
     </nav>
-
-    <div class="modal is-active" v-if="editing">
-        <div class="modal-background" @click="cancelEdit"></div>
-        <div class="modal-content"></div>
-        <button class="modal-close is-large" @click="cancelEdit"></button>
-    </div>
 </template>
 
 <style>
