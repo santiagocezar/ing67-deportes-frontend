@@ -42,6 +42,9 @@ watch(
                 <a class="navbar-item" href="/sports"> Deportes </a>
                 <a class="navbar-item" href="/teams"> Equipos </a>
                 <a class="navbar-item" href="/players"> Jugadores </a>
+                <a class="navbar-item" href="/competitions">
+                    Competencias
+                </a>
             </div>
 
             <div class="navbar-end">

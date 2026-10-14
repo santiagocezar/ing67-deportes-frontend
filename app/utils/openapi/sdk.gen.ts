@@ -407,15 +407,7 @@ export const playerPhotosDelete = <ThrowOnError extends boolean = false>(options
  *
  * Returns the stored image with its PNG or JPG media type. The response is marked as non-storable because it is biometric data.
  */
-export const playerPhotosGetImage = <ThrowOnError extends boolean = false>(options: Options<PlayerPhotosGetImageData, ThrowOnError>): RequestResult<PlayerPhotosGetImageResponses, PlayerPhotosGetImageErrors, ThrowOnError> => (options.client ?? client).get<PlayerPhotosGetImageResponses, PlayerPhotosGetImageErrors, ThrowOnError>({
-  security: [{
-      key: 'AccessTokenAuth',
-      scheme: 'bearer',
-      type: 'http'
-    }],
-  url: '/players/{player_id}/photos/{photo_id}',
-  ...options
-});
+export const playerPhotosGetImage = <ThrowOnError extends boolean = false>(options: Options<PlayerPhotosGetImageData, ThrowOnError>): RequestResult<PlayerPhotosGetImageResponses, PlayerPhotosGetImageErrors, ThrowOnError> => (options.client ?? client).get<PlayerPhotosGetImageResponses, PlayerPhotosGetImageErrors, ThrowOnError>({ url: '/players/{player_id}/photos/{photo_id}', ...options });
 
 /**
  * List referees

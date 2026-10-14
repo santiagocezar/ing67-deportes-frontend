@@ -2210,14 +2210,6 @@ export type PlayerPhotosGetImageData = {
 
 export type PlayerPhotosGetImageErrors = {
   /**
-   * Unauthorized
-   */
-  401: ErrorResponse;
-  /**
-   * Forbidden
-   */
-  403: ErrorResponse;
-  /**
    * Not Found
    */
   404: ErrorResponse;
