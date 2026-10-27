@@ -4,8 +4,6 @@ import {
     type RosterPlayerResponse,
 } from "~/utils/openapi";
 
-import Chevron from "~icons/fluent/chevron-down-24-regular";
-
 const props = defineProps<{
     teams: Array<{ id: number; name: string }>;
     max: number;
@@ -35,7 +33,9 @@ watch(
     { immediate: true },
 );
 
-const selectedTeamIds = computed(() => Object.keys(selection.value).map(Number));
+const selectedTeamIds = computed(() =>
+    Object.keys(selection.value).map(Number),
+);
 const atMax = computed(() => selectedTeamIds.value.length >= props.max);
 
 function selectedCount(teamId: number) {
@@ -48,6 +48,10 @@ function isSelected(teamId: number, playerId: number) {
 
 function isPlayerDisabled(teamId: number) {
     return !selection.value[teamId] && atMax.value;
+}
+
+function playerInputId(teamId: number, playerId: number) {
+    return `team-${teamId}-player-${playerId}`;
 }
 
 function togglePlayer(teamId: number, playerId: number) {
@@ -84,72 +88,73 @@ function onToggle(teamId: number, ev: Event) {
 
 <template>
     <div>
-        <p v-if="disabled">Primero, seleccioná deporte y género.</p>
-        <p v-else-if="!teams.length">No hay equipos en esa categoría.</p>
-        <template v-else>
+        <p v-if="disabled" class="form-text mb-0">
+            Primero, seleccioná deporte y género.
+        </p>
+        <p v-else-if="!teams.length" class="form-text mb-0">
+            No hay equipos en esa categoría.
+        </p>
+        <div v-else class="accordion accordion-gap">
             <details
                 v-for="team in teams"
                 :key="team.id"
-                class="box mb-2"
+                class="accordion-item"
                 @toggle="onToggle(team.id, $event)"
             >
-                <summary class="is-flex is-align-items-center">
-                    <span class="icon is-small mr-2">
-                        <Chevron />
-                    </span>
+                <summary class="accordion-header">
                     <strong v-if="selectedCount(team.id) > 0">
                         {{ team.name }}
                     </strong>
                     <span v-else>{{ team.name }}</span>
                     <span
-                        class="tag ml-auto"
-                        :class="{ 'is-primary': selectedCount(team.id) > 0 }"
+                        class="badge ms-2"
+                        :class="{
+                            'theme-primary': selectedCount(team.id) > 0,
+                        }"
                     >
                         {{ selectedCount(team.id) }}
                     </span>
+                    <svg
+                        class="accordion-icon"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <path d="m2 5 6 6 6-6" />
+                    </svg>
                 </summary>
 
-                <div class="mt-2">
-                    <p v-if="loading[team.id]">Cargando jugadores...</p>
-                    <p v-else-if="!players[team.id]?.length">
+                <div class="accordion-body">
+                    <p v-if="loading[team.id]" class="fg-2">
+                        Cargando jugadores...
+                    </p>
+                    <p v-else-if="!players[team.id]?.length" class="fg-2">
                         No hay jugadores habilitados en este equipo.
                     </p>
-                    <div v-else class="checkboxes">
-                        <label
-                            class="checkbox"
+                    <div v-else class="d-flex flex-wrap gap-2">
+                        <div
+                            class="form-field"
                             v-for="player in players[team.id]"
                             :key="player.id"
                         >
                             <input
+                                class="check"
                                 type="checkbox"
+                                :id="playerInputId(team.id, player.id)"
                                 :checked="isSelected(team.id, player.id)"
                                 :disabled="isPlayerDisabled(team.id)"
                                 @change="togglePlayer(team.id, player.id)"
                             />
-                            {{ player.name }}
-                        </label>
+                            <label :for="playerInputId(team.id, player.id)">
+                                {{ player.name }}
+                            </label>
+                        </div>
                     </div>
                 </div>
             </details>
-        </template>
+        </div>
     </div>
 </template>
-
-<style scoped>
-summary {
-    cursor: pointer;
-    user-select: none;
-}
-
-summary::-webkit-details-marker {
-    display: none;
-}
-
-summary .icon {
-    transition: transform 0.15s ease;
-}
-
-details[open] > summary .icon {
-    transform: rotate(180deg);
-}
-</style>

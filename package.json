@@ -11,6 +11,9 @@
     "openapi": "openapi-ts -i http://127.0.0.1:5000/openapi.json -o app/utils/openapi"
   },
   "dependencies": {
+    "@nuxt/fonts": "1.0.1",
+    "@typescript/typescript6": "^6.0.2",
+    "bootstrap": "6.0.0-alpha.1",
     "bulma": "^1.0.4",
     "nuxt": "^4.5.2",
     "vue": "^3.5.41",

@@ -54,12 +54,30 @@ function statusLabel(status: CompetitionStatus) {
     }[status];
 }
 
+function statusTheme(status: CompetitionStatus) {
+    return {
+        scheduled: "theme-secondary",
+        in_progress: "theme-info",
+        finished: "theme-success",
+        discarded: "theme-danger",
+    }[status];
+}
+
 function matchStatusLabel(status: MatchResponse["status"]) {
     return {
         incomplete: "Incompleto",
         scheduled: "Programado",
         in_progress: "En curso",
         finished: "Finalizado",
+    }[status];
+}
+
+function matchStatusTheme(status: MatchResponse["status"]) {
+    return {
+        incomplete: "theme-danger",
+        scheduled: "theme-secondary",
+        in_progress: "theme-info",
+        finished: "theme-success",
     }[status];
 }
 
@@ -301,238 +319,287 @@ async function saveMatch(match: MatchResponse, ev: SubmitEvent) {
 
 <template>
     <div class="container p-4">
-        <p class="notification is-danger" v-if="message">{{ message }}</p>
+        <div class="alert theme-danger" role="alert" v-if="message">
+            {{ message }}
+        </div>
 
-        <form v-if="editing" class="mb-3" action="#" @submit="saveCompetition">
-            <p class="title is-5 mb-0">
-                Detalles de la competencia #{{ editing.id }}
+        <template v-if="editing">
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                <h1 class="h4 mb-0">
+                    Detalles de la competencia #{{ editing.id }}
+                </h1>
+                <span
+                    class="badge badge-subtle"
+                    :class="statusTheme(editing.status)"
+                >
+                    {{ statusLabel(editing.status) }}
+                </span>
+                <span
+                    class="badge badge-subtle"
+                    :class="
+                        editing.is_enabled ? 'theme-success' : 'theme-danger'
+                    "
+                >
+                    {{ editing.is_enabled ? "Habilitada" : "Deshabilitada" }}
+                </span>
+            </div>
+
+            <p class="fg-2 mb-3">
+                {{ editing.sport.name }} {{ genderLabel(editing.gender) }}
             </p>
 
-            <p class="mb-3">
-                {{ editing.sport.name }} {{ genderLabel(editing.gender) }} ·
-                {{ statusLabel(editing.status) }}
-            </p>
-
-            <label class="field">
-                <span class="label">Nombre</span>
-                <input
-                    class="input"
-                    v-model="edited.name"
-                    type="text"
-                    required
-                />
-            </label>
-
-            <div class="sideside mt-3">
-                <label class="field">
-                    <span class="label">Inicio</span>
+            <form class="vstack gap-3" action="#" @submit="saveCompetition">
+                <div class="form-field">
+                    <label for="name" class="form-label">Nombre</label>
                     <input
-                        class="input"
-                        v-model="edited.starts_at"
-                        type="datetime-local"
+                        class="form-control"
+                        id="name"
+                        v-model="edited.name"
+                        type="text"
                         required
-                    />
-                </label>
-                <label class="field">
-                    <span class="label">Fin</span>
-                    <input
-                        class="input"
-                        v-model="edited.ends_at"
-                        type="datetime-local"
-                        required
-                    />
-                </label>
-            </div>
-            <div class="is-flex mt-3">
-                <button
-                    class="button"
-                    type="button"
-                    v-if="editing.is_enabled"
-                    @click="setCompetitionEnabled(false)"
-                >
-                    <span class="icon is-small has-text-danger">
-                        <Subtract />
-                    </span>
-                    <span> Deshabilitar </span>
-                </button>
-
-                <button
-                    class="button"
-                    type="button"
-                    v-else
-                    @click="setCompetitionEnabled(true)"
-                >
-                    <span class="icon is-small has-text-success">
-                        <Checkmark />
-                    </span>
-                    <span> Habilitar </span>
-                </button>
-                <div class="is-flex-grow-1"></div>
-                <button class="button is-primary">Actualizar datos</button>
-            </div>
-        </form>
-
-        <hr />
-
-        <section v-if="editing" class="mb-5">
-            <p class="title is-5">Equipos y árbitros</p>
-            <form action="#" @submit="saveParticipants">
-                <div class="field">
-                    <span class="label">
-                        Equipos participantes (entre
-                        {{ MIN_COMPETITION_TEAMS }} y
-                        {{ MAX_COMPETITION_TEAMS }})
-                    </span>
-                    <TeamPicker
-                        v-model="selectedTeams"
-                        :teams="participantTeamsData?.teams ?? []"
-                        :max="MAX_COMPETITION_TEAMS"
-                        :roster="participantRoster"
-                        @error="reportError"
                     />
                 </div>
 
-                <div class="field">
-                    <span class="label">Árbitros</span>
-                    <p v-if="!refereesData?.referees.length">
-                        No hay árbitros disponibles.
-                    </p>
-                    <div class="checkboxes" v-else>
-                        <label
-                            class="checkbox"
-                            v-for="referee in refereesData.referees"
-                            :key="referee.id"
-                        >
-                            <input
-                                type="checkbox"
-                                :checked="
-                                    participantRefereeIds.includes(referee.id)
-                                "
-                                @change="toggleReferee(referee.id)"
+                <div class="row g-3">
+                    <div class="md:col-6">
+                        <div class="form-field">
+                            <label for="starts_at" class="form-label">
+                                Inicio
+                            </label>
+                            <DatePicker
+                                v-model="edited.starts_at"
+                                id="starts_at"
                             />
-                            {{ referee.name }}
-                        </label>
+                        </div>
+                    </div>
+                    <div class="md:col-6">
+                        <div class="form-field">
+                            <label for="ends_at" class="form-label">Fin</label>
+                            <DatePicker v-model="edited.ends_at" id="ends_at" />
+                        </div>
                     </div>
                 </div>
 
-                <button class="button is-primary">
-                    Actualizar participantes
-                </button>
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <button
+                        class="btn-outline theme-danger"
+                        type="button"
+                        v-if="editing.is_enabled"
+                        @click="setCompetitionEnabled(false)"
+                    >
+                        <Subtract />
+                        <span>Deshabilitar</span>
+                    </button>
+
+                    <button
+                        class="btn-outline theme-success"
+                        type="button"
+                        v-else
+                        @click="setCompetitionEnabled(true)"
+                    >
+                        <Checkmark />
+                        <span>Habilitar</span>
+                    </button>
+
+                    <a
+                        class="btn-outline theme-secondary ms-auto"
+                        href="/competitions"
+                    >
+                        Cancelar
+                    </a>
+                    <button class="btn-solid theme-primary">
+                        Guardar cambios
+                    </button>
+                </div>
             </form>
-        </section>
+
+            <hr />
+
+            <section class="mb-5">
+                <h2 class="h5 mb-3">Equipos y árbitros</h2>
+
+                <form
+                    class="vstack gap-3"
+                    action="#"
+                    @submit="saveParticipants"
+                >
+                    <div class="form-group">
+                        <span class="form-label">
+                            Equipos participantes (entre
+                            {{ MIN_COMPETITION_TEAMS }} y
+                            {{ MAX_COMPETITION_TEAMS }})
+                        </span>
+                        <TeamPicker
+                            v-model="selectedTeams"
+                            :teams="participantTeamsData?.teams ?? []"
+                            :max="MAX_COMPETITION_TEAMS"
+                            :roster="participantRoster"
+                            @error="reportError"
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <span class="form-label">Árbitros</span>
+                        <p
+                            v-if="!refereesData?.referees.length"
+                            class="form-text mb-0"
+                        >
+                            No hay árbitros disponibles.
+                        </p>
+                        <div v-else class="d-flex flex-wrap gap-2">
+                            <div
+                                class="form-field"
+                                v-for="referee in refereesData.referees"
+                                :key="referee.id"
+                            >
+                                <input
+                                    class="check"
+                                    type="checkbox"
+                                    :id="`referee-${referee.id}`"
+                                    :checked="
+                                        participantRefereeIds.includes(
+                                            referee.id,
+                                        )
+                                    "
+                                    @change="toggleReferee(referee.id)"
+                                />
+                                <label :for="`referee-${referee.id}`">
+                                    {{ referee.name }}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex">
+                        <button class="btn-solid theme-primary ms-auto">
+                            Actualizar participantes
+                        </button>
+                    </div>
+                </form>
+            </section>
+        </template>
+
         <hr />
 
         <section>
-            <div class="is-flex is-align-items-center mb-3">
-                <p class="title is-5 mb-0">Partidos</p>
-                <div class="is-flex-grow-1"></div>
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <h2 class="h5 mb-0">Partidos</h2>
                 <button
-                    class="button is-primary"
+                    class="btn-solid btn-styled theme-primary ms-auto"
                     type="button"
                     @click="randomizeMatches"
                 >
-                    <span class="icon">
-                        <Shuffle />
-                    </span>
+                    <Shuffle />
                     <span>Sorteo</span>
                 </button>
             </div>
 
-            <p v-if="!matches?.matches.length">
+            <p v-if="!matches?.matches.length" class="fg-2">
                 Todavía no hay partidos generados.
             </p>
 
-            <div
-                class="box"
-                v-for="[round, roundMatches] in matchesByRound"
-                :key="round"
-            >
-                <p class="title is-6 mb-3">Fecha {{ round }}</p>
-                <div class="mb-3" v-for="match in roundMatches" :key="match.id">
-                    <hr class="my-2" />
-                    <div class="is-flex is-align-items-center">
-                        <div>
-                            <p class="has-text-weight-semibold">
-                                {{ match.team_1.name }} vs
-                                {{ match.team_2.name }}
-                            </p>
-                            <p class="is-size-7">
-                                <span
-                                    class="tag"
-                                    :class="{
-                                        'is-danger':
-                                            match.status === 'incomplete',
-                                    }"
-                                >
-                                    {{ matchStatusLabel(match.status) }}
-                                </span>
-                                Árbitro: {{ match.referee.name }}
-                            </p>
-                        </div>
-                        <div class="is-flex-grow-1"></div>
-                        <button
-                            class="button"
-                            type="submit"
-                            :form="`match-form-${match.id}`"
-                            aria-label="Actualizar"
-                            title="Actualizar"
-                        >
-                            <span class="icon">
-                                <Save />
-                            </span>
-                        </button>
+            <div v-else class="vstack gap-3">
+                <div
+                    class="card"
+                    v-for="[round, roundMatches] in matchesByRound"
+                    :key="round"
+                >
+                    <div class="card-header">
+                        <h3 class="h6 mb-0">Fecha {{ round }}</h3>
                     </div>
-                    <form
-                        class="mt-2"
-                        :id="`match-form-${match.id}`"
-                        action="#"
-                        @submit="saveMatch(match, $event)"
-                    >
-                        <div class="field">
-                            <span class="label">Inicio y fin</span>
-                            <div class="sideside">
-                                <input
-                                    class="input"
-                                    v-model="matchEdits[match.id].starts_at"
-                                    type="datetime-local"
-                                />
-                                <input
-                                    class="input"
-                                    v-model="matchEdits[match.id].ends_at"
-                                    type="datetime-local"
-                                />
+
+                    <div class="card-body vstack gap-3">
+                        <div
+                            class="vstack gap-2"
+                            v-for="(match, index) in roundMatches"
+                            :key="match.id"
+                        >
+                            <div class="d-flex align-items-start gap-2">
+                                <div class="flex-grow-1">
+                                    <p class="fw-semibold mb-1">
+                                        {{ match.team_1.name }} vs
+                                        {{ match.team_2.name }}
+                                    </p>
+                                    <div
+                                        class="d-flex flex-wrap align-items-center gap-2"
+                                    >
+                                        <span
+                                            class="badge badge-subtle"
+                                            :class="
+                                                matchStatusTheme(match.status)
+                                            "
+                                        >
+                                            {{ matchStatusLabel(match.status) }}
+                                        </span>
+                                        <span class="fg-2 small">
+                                            Árbitro: {{ match.referee.name }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <button
+                                    class="btn-outline btn-icon theme-primary"
+                                    type="submit"
+                                    :form="`match-form-${match.id}`"
+                                    aria-label="Actualizar"
+                                    title="Actualizar"
+                                >
+                                    <Save />
+                                </button>
                             </div>
+
+                            <form
+                                class="row g-2"
+                                :id="`match-form-${match.id}`"
+                                action="#"
+                                @submit="saveMatch(match, $event)"
+                            >
+                                <div class="md:col-6">
+                                    <div class="form-field">
+                                        <label
+                                            class="form-label"
+                                            :for="`match-${match.id}-starts-at`"
+                                        >
+                                            Inicio
+                                        </label>
+                                        <input
+                                            class="form-control"
+                                            :id="`match-${match.id}-starts-at`"
+                                            v-model="
+                                                matchEdits[match.id].starts_at
+                                            "
+                                            type="datetime-local"
+                                        />
+                                    </div>
+                                </div>
+                                <div class="md:col-6">
+                                    <div class="form-field">
+                                        <label
+                                            class="form-label"
+                                            :for="`match-${match.id}-ends-at`"
+                                        >
+                                            Fin
+                                        </label>
+                                        <input
+                                            class="form-control"
+                                            :id="`match-${match.id}-ends-at`"
+                                            v-model="
+                                                matchEdits[match.id].ends_at
+                                            "
+                                            type="datetime-local"
+                                        />
+                                    </div>
+                                </div>
+                            </form>
+
+                            <hr
+                                class="my-1"
+                                v-if="index < roundMatches.length - 1"
+                            />
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </section>
     </div>
 </template>
-
-<style>
-.sideside {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
-
-    .field {
-        width: 100%;
-        .select {
-            width: 100%;
-        }
-    }
-}
-
-@media (max-width: 768px) {
-    .sideside {
-        grid-template-columns: 1fr;
-    }
-}
-
-.checkboxes {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem 1rem;
-}
-</style>

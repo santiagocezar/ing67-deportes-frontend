@@ -10,8 +10,18 @@ export default defineNuxtConfig({
             apiBase: import.meta.env.NUXT_PUBLIC_API_BASE,
         },
     },
-    css: ["~/assets/style/index.scss"],
-    modules: ["unplugin-icons/nuxt"],
+    css: [
+        // "~/assets/style/bulma.scss",
+        "bootstrap/dist/css/bootstrap.css",
+        "~/assets/style/index.css",
+    ],
+    modules: ["unplugin-icons/nuxt", "@nuxt/fonts"],
+    fonts: {
+        families: [
+            { name: "Outfit", provider: "google", global: true },
+            { name: "Barlow", provider: "google", global: true },
+        ],
+    },
     vite: {
         plugins: [
             ViteComponents({

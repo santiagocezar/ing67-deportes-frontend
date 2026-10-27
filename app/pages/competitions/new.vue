@@ -95,8 +95,8 @@ async function addCompetition(ev: SubmitEvent) {
                 name: value.name,
                 sport_id: value.sport_id,
                 gender: value.gender,
-                starts_at: new Date(value.starts_at).toISOString(),
-                ends_at: new Date(value.ends_at).toISOString(),
+                starts_at: value.starts_at,
+                ends_at: value.ends_at,
                 referee_ids: [...value.referee_ids],
                 teams: selectedTeamIds.value.map((team_id) => ({
                     team_id,
@@ -124,92 +124,104 @@ watch(
 
 <template>
     <div class="container p-4">
-        <p class="notification is-danger" v-if="message">{{ message }}</p>
+        <div class="alert theme-danger" role="alert" v-if="message">
+            {{ message }}
+        </div>
 
-        <p class="title is-5">Agregar competencia</p>
+        <h1 class="h4 mb-3">Agregar competencia</h1>
 
-        <form action="#" @submit="addCompetition">
-            <div class="field">
-                <label for="name" class="label">Nombre</label>
+        <form class="vstack gap-3" action="#" @submit="addCompetition">
+            <div class="form-field">
+                <label for="name" class="form-label">Nombre</label>
                 <input
-                    class="input"
+                    class="form-control"
                     id="name"
                     v-model="value.name"
                     type="text"
                     required
                 />
             </div>
-            <div class="sideside">
-                <label class="field">
-                    <span class="label">Deporte</span>
-                    <div class="select">
-                        <select v-model="value.sport_id" required>
-                            <option value="">Elegir deporte</option>
-                            <option
-                                v-for="sport in sportsData?.sports"
-                                :key="sport.id"
-                                :value="sport.id"
-                            >
-                                {{ sport.name }}
-                            </option>
-                        </select>
-                    </div>
-                </label>
-                <label class="field">
-                    <span class="label">Género</span>
-                    <div class="select">
-                        <select v-model="value.gender" required>
-                            <option value="">Elegir género</option>
-                            <option value="male">Masculino</option>
-                            <option value="female">Femenino</option>
-                        </select>
-                    </div>
-                </label>
-            </div>
-            <div class="sideside">
-                <label class="field">
-                    <span class="label">Inicio</span>
-                    <input
-                        class="input"
-                        v-model="value.starts_at"
-                        type="datetime-local"
+
+            <div class="row g-3">
+                <div class="md:col-6 form-field">
+                    <label for="sport_id" class="form-label"> Deporte </label>
+                    <select
+                        class="form-control"
+                        id="sport_id"
+                        v-model="value.sport_id"
                         required
-                    />
-                </label>
-                <label class="field">
-                    <span class="label">Fin</span>
-                    <input
-                        class="input"
-                        v-model="value.ends_at"
-                        type="datetime-local"
+                    >
+                        <option value="">Elegir deporte</option>
+                        <option
+                            v-for="sport in sportsData?.sports"
+                            :key="sport.id"
+                            :value="sport.id"
+                        >
+                            {{ sport.name }}
+                        </option>
+                    </select>
+                </div>
+                <div class="md:col-6 form-field">
+                    <label for="gender" class="form-label">Género</label>
+                    <select
+                        class="form-control"
+                        id="gender"
+                        v-model="value.gender"
                         required
-                    />
-                </label>
+                    >
+                        <option value="">Elegir género</option>
+                        <option value="male">Masculino</option>
+                        <option value="female">Femenino</option>
+                    </select>
+                </div>
             </div>
+
+            <div class="row g-3">
+                <div class="md:col-6">
+                    <div class="form-field">
+                        <label for="starts_at" class="form-label">
+                            Inicio
+                        </label>
+                        <DatePicker v-model="value.starts_at" id="starts_at" />
+                    </div>
+                </div>
+                <div class="md:col-6">
+                    <div class="form-field">
+                        <label for="ends_at" class="form-label">Fin</label>
+                        <DatePicker v-model="value.ends_at" id="ends_at" />
+                    </div>
+                </div>
+            </div>
+
             <hr />
-            <div class="field">
-                <span class="label">Árbitros</span>
-                <p v-if="!refereesData?.referees.length">
+
+            <div class="form-group">
+                <span class="form-label">Árbitros</span>
+                <div v-if="!refereesData?.referees.length" class="form-text">
                     No hay árbitros disponibles.
-                </p>
-                <div class="checkboxes" v-else>
-                    <label
-                        class="checkbox"
+                </div>
+                <div v-else class="d-flex flex-wrap gap-2">
+                    <div
+                        class="form-field"
                         v-for="referee in refereesData.referees"
                         :key="referee.id"
                     >
                         <input
+                            class="check"
                             type="checkbox"
+                            :id="`referee-${referee.id}`"
                             :checked="value.referee_ids.includes(referee.id)"
                             @change="toggleReferee(referee.id)"
                         />
-                        {{ referee.name }}
-                    </label>
+                        <label :for="`referee-${referee.id}`">
+                            {{ referee.name }}
+                        </label>
+                    </div>
                 </div>
             </div>
 
-            <div class="field">
-                <span class="label">
+            <div class="form-group">
+                <span class="form-label">
                     Equipos participantes (entre
                     {{ MIN_COMPETITION_TEAMS }} y {{ MAX_COMPETITION_TEAMS }})
                 </span>
@@ -221,34 +233,18 @@ watch(
                     @error="reportError"
                 />
             </div>
-            <div class="is-flex mt-3">
-                <a class="button" href="/competitions">Cancelar</a>
-                <div class="is-flex-grow-1"></div>
-                <button class="button is-primary" :disabled="saving">
-                    Agregar competencia
+
+            <div class="d-flex align-items-center gap-2">
+                <a class="btn-outline theme-secondary" href="/competitions">
+                    Cancelar
+                </a>
+                <button
+                    class="btn-solid theme-primary ms-auto"
+                    :disabled="saving"
+                >
+                    Confirmar
                 </button>
             </div>
         </form>
     </div>
 </template>
-
-<style>
-.sideside {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
-
-    .field {
-        width: 100%;
-        .select {
-            width: 100%;
-        }
-    }
-}
-
-.checkboxes {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem 1rem;
-}
-</style>

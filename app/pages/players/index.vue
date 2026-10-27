@@ -6,15 +6,12 @@ import {
     type TeamListResponse,
 } from "~/utils/openapi";
 
-import Options from "~icons/fluent/options-48-filled";
+import Filter from "~icons/fluent/filter-32-filled";
 import Search from "~icons/fluent/search-48-filled";
+import Add from "~icons/fluent/add-48-filled";
 
 type PlayerStatus = "enabled" | "disabled" | "all";
 type PlayerSort = "name_asc" | "created_at_desc";
-
-const MAX_PLAYER_TEAMS = 3;
-
-const { $api } = useNuxtApp();
 
 const filters = reactive({
     search: "",
@@ -41,7 +38,7 @@ const playersQuery = computed(() => {
     return query;
 });
 
-const { data, refresh } = await useAPI<PlayerListResponse>("/players", {
+const { data } = await useAPI<PlayerListResponse>("/players", {
     query: playersQuery,
 });
 
@@ -64,38 +61,7 @@ const { data: filterTeamsData } = await useAPI<TeamListResponse>("/teams", {
     query: filterTeamsQuery,
 });
 
-const value = reactive<{
-    name: string;
-    sport_id: number | "";
-    gender: Player["gender"] | "";
-    team_ids: number[];
-}>({
-    name: "",
-    sport_id: "",
-    gender: "",
-    team_ids: [],
-});
-
-const canPickCreateTeams = computed(() =>
-    Boolean(value.sport_id && value.gender),
-);
-
-const { data: createTeamsData } = await useAPI<TeamListResponse>("/teams", {
-    query: computed(() => ({
-        status: "enabled",
-        sort: "name_asc",
-        sport_id: value.sport_id,
-        gender_category: value.gender,
-    })),
-    enabled: canPickCreateTeams,
-});
-
 const message = ref("");
-
-function reportError(error: unknown) {
-    const body = (error as { data?: { error?: { message?: string } } }).data;
-    message.value = body?.error?.message ?? "Ocurrió un error inesperado.";
-}
 
 function genderLabel(gender: Player["gender"]) {
     return gender === "male" ? "Masculino" : "Femenino";
@@ -103,17 +69,6 @@ function genderLabel(gender: Player["gender"]) {
 
 function formatDate(date: string) {
     return new Date(date).toLocaleDateString();
-}
-
-function toggleTeam(team_ids: number[], id: number) {
-    const index = team_ids.indexOf(id);
-
-    if (index === -1) {
-        if (team_ids.length >= MAX_PLAYER_TEAMS) return;
-        team_ids.push(id);
-    } else {
-        team_ids.splice(index, 1);
-    }
 }
 
 // Cambiar un filtro vuelve a la primera página del listado.
@@ -139,39 +94,6 @@ watch(
     },
 );
 
-watch(
-    () => [value.sport_id, value.gender],
-    () => {
-        value.team_ids = [];
-    },
-);
-
-async function addPlayer(ev: SubmitEvent) {
-    ev.preventDefault();
-    message.value = "";
-
-    try {
-        await $api("/players", {
-            method: "POST",
-            body: {
-                name: value.name,
-                sport_id: value.sport_id,
-                gender: value.gender,
-                team_ids: [...value.team_ids],
-            },
-        });
-    } catch (error) {
-        reportError(error);
-        return;
-    }
-
-    value.name = "";
-    value.sport_id = "";
-    value.gender = "";
-    value.team_ids = [];
-    refresh();
-}
-
 function goToPage(page: number) {
     filters.page = page;
 }
@@ -179,104 +101,63 @@ function goToPage(page: number) {
 
 <template>
     <div class="container p-4">
+        <div class="d-flex align-items-center mb-3">
+            <h1 class="h4 mb-0">Jugadores</h1>
+            <a
+                class="btn-solid btn-styled theme-accent ms-auto"
+                href="/players/new"
+                aria-label="Agregar nuevo"
+            >
+                <Add />
+                Nuevo
+            </a>
+        </div>
+
         <p class="notification is-danger" v-if="message">{{ message }}</p>
 
-        <form action="#" @submit="addPlayer">
-            <div class="field">
-                <label for="name" class="label">Nombre</label>
-                <input
-                    class="input"
-                    id="name"
-                    v-model="value.name"
-                    type="text"
-                    required
-                />
-            </div>
-            <div class="sideside">
-                <label class="field">
-                    <span class="label">Deporte</span>
-                    <div class="select">
-                        <select v-model="value.sport_id" required>
-                            <option value="">Elegir deporte</option>
-                            <option
-                                v-for="sport in sportsData?.sports"
-                                :key="sport.id"
-                                :value="sport.id"
-                            >
-                                {{ sport.name }}
-                            </option>
-                        </select>
-                    </div>
-                </label>
-                <label class="field">
-                    <span class="label">Género</span>
-                    <div class="select">
-                        <select v-model="value.gender" required>
-                            <option value="">Elegir género</option>
-                            <option value="male">Masculino</option>
-                            <option value="female">Femenino</option>
-                        </select>
-                    </div>
-                </label>
-            </div>
-            <div class="field">
-                <span class="label">
-                    Selección de equipos (máx. {{ MAX_PLAYER_TEAMS }})
-                </span>
-                <p v-if="!canPickCreateTeams">
-                    Primero, seleccione deporte y género.
-                </p>
-                <p v-else-if="!createTeamsData?.teams.length">
-                    No hay equipos en esa categoría.
-                </p>
-                <label
-                    class="checkbox"
-                    v-for="team in createTeamsData?.teams"
-                    :key="team.id"
-                >
-                    <input
-                        type="checkbox"
-                        :checked="value.team_ids.includes(team.id)"
-                        :disabled="
-                            !value.team_ids.includes(team.id) &&
-                            value.team_ids.length >= MAX_PLAYER_TEAMS
-                        "
-                        @change="toggleTeam(value.team_ids, team.id)"
-                    />
-                    {{ team.name }}
-                </label>
-            </div>
-            <button class="button is-primary">Agregar jugador</button>
-        </form>
-
-        <hr />
-
         <form class="mb-3 search is-flex" action="#" @submit.prevent>
-            <p class="control has-icons-left is-flex-grow-1">
+            <div class="hstack gap-2" role="search">
+                <button
+                    class="btn-solid btn-styled btn-icon theme-primary"
+                    type="button"
+                    data-bs-toggle="dialog"
+                    data-bs-target="#more-filters"
+                    aria-label="Expandir filtros"
+                >
+                    <Filter />
+                </button>
                 <input
-                    class="input"
-                    v-model="filters.search"
+                    class="form-control"
                     type="search"
+                    v-model="filters.search"
                     placeholder="Buscar por nombre"
+                    aria-label="Buscar por nombre"
                 />
-                <span class="icon is-left">
-                    <Search />
-                </span>
-            </p>
+            </div>
 
-            <button class="button" type="button" popovertarget="more-filters">
-                <Options />
-            </button>
-
-            <dialog
-                popover
-                id="more-filters"
-                class="card container my-auto p-4 is-primary"
-            >
-                <label class="field">
-                    <span class="label">Deporte</span>
-                    <div class="select">
-                        <select v-model="filters.sport_id">
+            <dialog id="more-filters" class="dialog">
+                <div class="dialog-header">
+                    <h1 class="dialog-title">
+                        <Filter class="me-2" />
+                        Filtros
+                    </h1>
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="dialog"
+                        aria-label="Close"
+                    ></button>
+                </div>
+                <div class="dialog-body d-flex flex-column gap-3">
+                    <div class="form-field">
+                        <label for="filters-sport_id" class="form-label">
+                            Deporte
+                        </label>
+                        <select
+                            class="form-control"
+                            id="filters-sport_id"
+                            v-model="filters.sport_id"
+                        >
                             <option value="">Todos</option>
                             <option
                                 v-for="sport in sportsData?.sports"
@@ -287,21 +168,29 @@ function goToPage(page: number) {
                             </option>
                         </select>
                     </div>
-                </label>
-                <label class="field">
-                    <span class="label">Género</span>
-                    <div class="select">
-                        <select v-model="filters.gender">
+                    <div class="form-field">
+                        <label for="filters-gender" class="form-label">
+                            Género
+                        </label>
+                        <select
+                            class="form-control"
+                            id="filters-gender"
+                            v-model="filters.gender"
+                        >
                             <option value="">Todos</option>
                             <option value="male">Masculino</option>
                             <option value="female">Femenino</option>
                         </select>
                     </div>
-                </label>
-                <label class="field">
-                    <span class="label">Equipo</span>
-                    <div class="select">
-                        <select v-model="filters.team_id">
+                    <div class="form-field">
+                        <label for="filters-team_id" class="form-label">
+                            Equipo
+                        </label>
+                        <select
+                            class="form-control"
+                            id="filters-team_id"
+                            v-model="filters.team_id"
+                        >
                             <option value="">Todos</option>
                             <option
                                 v-for="team in filterTeamsData?.teams"
@@ -312,35 +201,56 @@ function goToPage(page: number) {
                             </option>
                         </select>
                     </div>
-                </label>
-                <br />
-                <label class="field">
-                    <span class="label">Estado</span>
-                    <div class="select">
-                        <select v-model="filters.status">
+                    <div class="form-field">
+                        <label for="filters-status" class="form-label">
+                            Estado
+                        </label>
+                        <select
+                            class="form-control"
+                            id="filters-status"
+                            v-model="filters.status"
+                        >
                             <option value="enabled">Habilitados</option>
                             <option value="disabled">Deshabilitados</option>
                             <option value="all">Todos</option>
                         </select>
                     </div>
-                </label>
-                <label class="field">
-                    <span class="label">Orden</span>
-                    <div class="select">
-                        <select v-model="filters.sort">
-                            <option value="name_asc">Nombre (A-Z)</option>
-                            <option value="created_at_desc">
-                                Más recientes
-                            </option>
-                        </select>
+                    <div class="form-field">
+                        <label id="filters-sort-label" class="form-label">
+                            Ordenar por
+                        </label>
+                        <div
+                            class="btn-group"
+                            role="group"
+                            aria-labelledby="filters-sort-label"
+                        >
+                            <label class="btn-check btn-outline theme-primary">
+                                <input
+                                    type="radio"
+                                    autocomplete="off"
+                                    value="name_asc"
+                                    v-model="filters.sort"
+                                />
+                                Nombre (A-Z)
+                            </label>
+                            <label class="btn-check btn-outline theme-primary">
+                                <input
+                                    type="radio"
+                                    autocomplete="off"
+                                    value="created_at_desc"
+                                    v-model="filters.sort"
+                                />
+                                Más reciente
+                            </label>
+                        </div>
                     </div>
-                </label>
+                </div>
             </dialog>
         </form>
 
         <div class="player-grid" v-if="data">
             <a
-                class="cell player card"
+                class="cell player card text-decoration-none"
                 v-for="player in data.players"
                 :href="`/players/${player.id}`"
                 :key="player.id"
@@ -348,16 +258,12 @@ function goToPage(page: number) {
                 <!-- <td>
                 {{ player.id }}
             </td> -->
-                <header class="card-header">
-                    <p class="card-header-title">
+                <div class="card-body">
+                    <h4 class="card-title">
                         <span class="pr-2">
                             {{ player.name }}
                         </span>
-                        <span class="has-text-weight-light">
-                            {{ player.sport.name }} ·
-                            {{ genderLabel(player.gender) }}
-                        </span>
-                    </p>
+                    </h4>
 
                     <!-- <button -->
                     <!--     class="card-header-icon" -->
@@ -369,50 +275,70 @@ function goToPage(page: number) {
                     <!--         <Edit /> -->
                     <!--     </span> -->
                     <!-- </button> -->
-                </header>
-                <div class="card-content pl-4 pb-4 pr-4 pt-0">
-                    <p>
-                        <strong>Juega en</strong>
-
+                    <div>
+                        <strong>
+                            {{ player.sport.name }}
+                            {{ genderLabel(player.gender) }}
+                        </strong>
+                        en
                         {{
                             player.teams.map((team) => team.name).join(", ") ||
                             "-"
                         }}
-                    </p>
-                    <p>
-                        {{ player.is_enabled ? "Habilitado" : "Deshabilitado" }}
-                    </p>
-                    <p>
-                        <small>
-                            Registrado {{ formatDate(player.created_at) }}
-                        </small>
-                    </p>
+                    </div>
                 </div>
-                <!-- <footer class="card-footer">
-                <a href="#" class="card-footer-item">Save</a>
-                <a href="#" class="card-footer-item">Edit</a>
-                <a href="#" class="card-footer-item">Delete</a>
-            </footer> -->
+
+                <div class="card-footer d-flex justify-content-between">
+                    <small class="fg-2">
+                        Registrado {{ formatDate(player.created_at) }}
+                    </small>
+                    <small class="fg-2">
+                        {{ player.is_enabled ? "Habilitado" : "Deshabilitado" }}
+                    </small>
+                </div>
             </a>
         </div>
         <p v-else>Hubo un problema para cargar los datos</p>
 
-        <nav class="pagination" v-if="data && data.pagination.total_pages > 1">
-            <button
-                class="pagination-previous"
-                :disabled="data.pagination.page <= 1"
-                @click="goToPage(data.pagination.page - 1)"
-            >
-                Anterior
-            </button>
-            <button
-                class="pagination-next"
-                :disabled="data.pagination.page >= data.pagination.total_pages"
-                @click="goToPage(data.pagination.page + 1)"
-            >
-                Siguiente
-            </button>
-            <p class="pagination-list">
+        <nav
+            class="d-flex flex-wrap align-items-center gap-2"
+            v-if="data && data.pagination.total_pages > 1"
+            aria-label="Paginación de jugadores"
+        >
+            <ul class="pagination mb-0">
+                <li
+                    class="page-item"
+                    :class="{ disabled: data.pagination.page <= 1 }"
+                >
+                    <button
+                        class="page-link"
+                        type="button"
+                        :disabled="data.pagination.page <= 1"
+                        @click="goToPage(data.pagination.page - 1)"
+                    >
+                        Anterior
+                    </button>
+                </li>
+                <li
+                    class="page-item"
+                    :class="{
+                        disabled:
+                            data.pagination.page >= data.pagination.total_pages,
+                    }"
+                >
+                    <button
+                        class="page-link"
+                        type="button"
+                        :disabled="
+                            data.pagination.page >= data.pagination.total_pages
+                        "
+                        @click="goToPage(data.pagination.page + 1)"
+                    >
+                        Siguiente
+                    </button>
+                </li>
+            </ul>
+            <p class="mb-0 fg-2">
                 Página {{ data.pagination.page }} de
                 {{ data.pagination.total_pages }} ({{
                     data.pagination.total_items

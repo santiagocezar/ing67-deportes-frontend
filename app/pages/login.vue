@@ -19,19 +19,49 @@ async function login(ev: SubmitEvent) {
 </script>
 
 <template>
-    <div class="container">
-        <form class="box" action="#" @submit="login">
-            <h1 class="title">Iniciar sesión</h1>
-            <label class="field">
-                <span class="label">Correo</span>
-                <input class="input" type="email" name="email" />
-            </label>
-            <label class="field">
-                <span class="label">Contraseña</span>
-                <input class="input" type="password" name="password" />
-            </label>
-            <div class="block"></div>
-            <button class="button is-primary">Login</button>
+    <div class="root">
+        <form
+            class="p-6 card col-12 sm:col-8 md:col-6 vstack gap-4"
+            action="#"
+            @submit="login"
+        >
+            <h1 class="h4">Inicio de sesión</h1>
+            <div class="form-field">
+                <label for="email" class="form-label">Correo</label>
+                <input
+                    class="form-control form-control-lg"
+                    type="email"
+                    id="email"
+                    name="email"
+                />
+            </div>
+            <div class="form-field">
+                <label for="password" class="form-label">Contraseña</label>
+                <input
+                    class="form-control form-control-lg"
+                    type="password"
+                    id="password"
+                    name="password"
+                />
+            </div>
+            <button
+                class="btn-solid btn-styled btn-lg rounded-pill align-self-center theme-accent"
+            >
+                Iniciar sesión
+            </button>
         </form>
     </div>
 </template>
+
+<style>
+.root {
+    height: 100%;
+    padding: 1rem;
+    align-content: center;
+
+    & form {
+        max-width: 400px;
+        margin: 0 auto;
+    }
+}
+</style>

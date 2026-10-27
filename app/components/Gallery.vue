@@ -49,41 +49,42 @@ function onCameraUpload(blob: Blob | null) {
 </script>
 
 <template>
-    <header class="mb-2 is-flex is-align-items-center">
-        <p class="title m-0 is-5">Fotos (máx. {{ max }})</p>
-        <div class="is-flex-grow-1"></div>
-        <div class="gallery__dropzone">
-            <label class="gallery__upload">
-                <div :disabled="disabled || null" class="button is-primary">
-                    <span class="icon">
-                        <ImageAdd />
-                    </span>
-                    <span>Subir</span>
-                </div>
-                <input
-                    class="gallery__file"
-                    type="file"
-                    multiple
-                    :disabled
-                    :accept="accept.join(',')"
-                    @change="onImageUpload"
-                />
-            </label>
-            <button
-                class="button is-primary"
-                type="button"
-                :disabled
-                @click="capturing = true"
-            >
-                <span>Tomar</span>
-                <span class="icon">
-                    <CameraIcon />
-                </span>
-            </button>
+    <header class="my-4 gap-2 d-flex align-items-center">
+        <div class="">
+            <h1 class="h4 mb-1">Fotos (máx. {{ max }})</h1>
+            <div class="form-text">Las fotos se guardan automáticamente</div>
         </div>
+        <div class="flex-grow-1"></div>
+        <label class="gallery__upload">
+            <div :disabled="disabled || null" class="btn-solid">
+                <span class="icon">
+                    <ImageAdd />
+                </span>
+                <span>Subir</span>
+            </div>
+            <input
+                class="gallery__file"
+                type="file"
+                multiple
+                :disabled
+                :accept="accept.join(',')"
+                @change="onImageUpload"
+            />
+        </label>
+        <button
+            class="btn-solid theme-accent"
+            type="button"
+            :disabled
+            @click="capturing = true"
+        >
+            <span>Tomar</span>
+            <span class="icon">
+                <CameraIcon />
+            </span>
+        </button>
     </header>
 
-    <div v-if="photoError" class="mb-2 notification is-danger">
+    <div v-if="photoError" class="mb-2 alert theme-danger">
         {{ photoError }}
     </div>
 
@@ -94,27 +95,23 @@ function onCameraUpload(blob: Blob | null) {
             class="gallery__item"
         >
             <a :href="src">
-                <img class="gallery__photo" :src alt="" />
+                <img class="gallery__photo img-thumbnail" :src alt="" />
             </a>
             <button
                 v-if="pending"
                 disabled
-                class="button is-warning is-outlined is-inverted is-loading gallery__delete"
+                class="btn-solid btn-icon btn-sm rounded-circle theme-accent gallery__delete"
                 type="button"
             >
-                <span class="icon">
-                    <Delete />
-                </span>
+                <span class="spinner-border" aria-hidden="true"></span>
             </button>
             <button
                 v-else
-                class="button is-danger is-outlined is-inverted gallery__delete"
+                class="btn-solid btn-icon btn-sm rounded-circle theme-danger gallery__delete"
                 type="button"
                 @click="emit('delete', src)"
             >
-                <span class="icon">
-                    <Delete />
-                </span>
+                <Delete />
             </button>
         </div>
     </div>
@@ -137,24 +134,6 @@ function onCameraUpload(blob: Blob | null) {
     width: 7.5rem;
 }
 
-.gallery__item,
-.gallery__dropzone {
-    border-radius: 0.5rem;
-}
-
-.gallery__dropzone {
-    display: grid;
-    padding: 0.5rem;
-    gap: 0.5rem;
-    grid-template-columns: 1fr 1fr;
-    border: 2px dashed var(--bulma-border, #dbdbdb);
-    cursor: pointer;
-
-    & .button {
-        width: 100%;
-    }
-}
-
 .gallery__photo {
     position: absolute;
     width: 100%;
@@ -164,8 +143,8 @@ function onCameraUpload(blob: Blob | null) {
 
 .gallery__delete {
     position: absolute;
-    right: 0.25rem;
-    bottom: 0.25rem;
+    right: 0.5rem;
+    bottom: 0.5rem;
 }
 
 .gallery__upload {

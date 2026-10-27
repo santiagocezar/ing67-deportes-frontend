@@ -1,0 +1,41 @@
+// Breeze Light color scheme (KDE Breeze) mapped onto Bulma's variables.
+// Base: BreezeLight.colors · Accents: Breeze blue/green/red/orange/yellow/purple.
+@use "bulma/sass" with (
+    // Greyscale scheme hue/saturation (Breeze greys are a desaturated blue).
+    $scheme-h: 210,
+    $scheme-s: 8%,
+
+    // Dark end (used for inverted surfaces / dark elements).
+    $black: hsl(210, 8%, 12%),
+    $black-bis: hsl(210, 8%, 16%),
+    $black-ter: hsl(210, 8%, 21%),
+
+    // Text and greys.
+    $grey-darker: hsl(210, 8%, 15%),
+    $grey-dark: hsl(210, 10%, 35%),
+    $grey: hsl(210, 10%, 49%),
+    $grey-light: hsl(210, 6%, 67%),
+    $grey-lighter: hsl(210, 8%, 88%),
+    $grey-lightest: hsl(210, 7%, 94%),
+
+    // Light end.
+    $white-ter: hsl(210, 0%, 97%),
+    $white-bis: hsl(0, 0%, 99%),
+    $white: hsl(0, 0%, 100%),
+
+    // Accents.
+    $orange: hsl(28, 100%, 48%),
+    $yellow: hsl(38, 98%, 64%),
+    $green: hsl(145, 63%, 42%),
+    $turquoise: hsl(168, 76%, 42%),
+    $cyan: hsl(206, 90%, 81%),
+    $blue: hsl(201, 80%, 58%),
+    $purple: hsl(283, 39%, 53%),
+    $red: hsl(354, 67%, 56%),
+    $primary: hsl(201, 80%, 58%),
+
+    // Radii.
+    $radius: 0.6rem,
+    $radius-medium: 0.75rem,
+    $radius-large: 1rem
+);

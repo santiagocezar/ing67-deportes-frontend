@@ -134,76 +134,102 @@ async function addPhoto(file: File) {
 </script>
 <template>
     <div class="container p-4">
-        <p class="notification is-danger" v-if="message">{{ message }}</p>
-        <form v-if="editing" class="mb-3" action="#" @submit="savePlayer">
-            <p class="title is-5">Detalles del Jugador #{{ editing.id }}</p>
-            <label class="field">
-                <span class="label">Nombre</span>
-                <input
-                    class="input"
-                    v-model="editing.name"
-                    type="text"
-                    required
-                />
-            </label>
+        <div class="alert theme-danger" role="alert" v-if="message">
+            {{ message }}
+        </div>
 
-            <br />
-            <br />
-            <p>
+        <template v-if="editing">
+            <h1 class="h4 mb-1">Detalles del jugador #{{ editing.id }}</h1>
+
+            <div class="form-text">
                 Juega:
                 <a :href="`/sports/${editing.sport.id}`">
                     {{ editing.sport.name }}
                     {{ genderLabel(editing.gender!) }}
                 </a>
-            </p>
+            </div>
 
-            <div class="field">
-                <span class="label">
-                    Selección de equipos (máx. {{ MAX_PLAYER_TEAMS }})
-                </span>
-                <p v-if="!editTeamsData?.teams.length">
-                    No hay equipos habilitados para esa combinación.
-                </p>
-                <label
-                    class="checkbox"
-                    v-for="team in editTeamsData?.teams"
-                    :key="team.id"
-                >
+            <form class="vstack gap-3" action="#" @submit="savePlayer">
+                <label class="form-field">
+                    <label for="player-name" class="form-label">Nombre</label>
                     <input
-                        type="checkbox"
-                        :checked="team_ids.includes(team.id)"
-                        :disabled="
-                            !team_ids.includes(team.id) &&
-                            team_ids.length >= MAX_PLAYER_TEAMS
-                        "
-                        @change="toggleTeam(team.id)"
+                        class="form-control"
+                        id="player-name"
+                        v-model="editing.name"
+                        type="text"
+                        required
                     />
-                    {{ team.name }}
                 </label>
-            </div>
 
-            <div class="is-flex">
-                <button
-                    class="button"
-                    v-if="editing.is_enabled"
-                    @click="setPlayerEnabled(false)"
-                >
-                    <span class="icon is-small has-text-danger">
+                <div class="form-group">
+                    <span class="form-label"
+                        >Selección de equipos (máx.
+                        {{ MAX_PLAYER_TEAMS }})</span
+                    >
+                    <div
+                        v-if="!editTeamsData?.teams.length"
+                        class="form-text mb-0"
+                    >
+                        No hay equipos habilitados para esa combinación.
+                    </div>
+                    <div v-else class="vstack gap-2">
+                        <div
+                            class="form-field"
+                            v-for="team in editTeamsData?.teams"
+                            :key="team.id"
+                        >
+                            <input
+                                class="check"
+                                type="checkbox"
+                                :id="`team-${team.id}`"
+                                :checked="team_ids.includes(team.id)"
+                                :disabled="
+                                    !team_ids.includes(team.id) &&
+                                    team_ids.length >= MAX_PLAYER_TEAMS
+                                "
+                                @change="toggleTeam(team.id)"
+                            />
+                            <label :for="`team-${team.id}`">
+                                {{ team.name }}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                    <button
+                        class="btn-outline theme-danger"
+                        type="button"
+                        v-if="editing.is_enabled"
+                        @click="setPlayerEnabled(false)"
+                    >
                         <Subtract />
-                    </span>
-                    <span> Deshabilitar </span>
-                </button>
+                        <span>Deshabilitar</span>
+                    </button>
 
-                <button class="button" v-else @click="setPlayerEnabled(true)">
-                    <span class="icon is-small has-text-success">
+                    <button
+                        class="btn-outline theme-success"
+                        type="button"
+                        v-else
+                        @click="setPlayerEnabled(true)"
+                    >
                         <Checkmark />
-                    </span>
-                    <span> Habilitar </span>
-                </button>
-                <div class="is-flex-grow-1"></div>
-                <button class="button is-primary">Actualizar datos</button>
-            </div>
-        </form>
+                        <span>Habilitar</span>
+                    </button>
+
+                    <a
+                        class="btn-outline theme-secondary ms-auto"
+                        href="/teams"
+                    >
+                        Cancelar
+                    </a>
+                    <button class="btn-solid theme-primary">
+                        Guardar cambios
+                    </button>
+                </div>
+            </form>
+        </template>
+        <hr />
         <Gallery
             :photoError
             :currentPhotos
