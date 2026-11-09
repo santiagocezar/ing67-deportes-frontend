@@ -14,7 +14,9 @@ async function login(ev: SubmitEvent) {
         data.get("password")?.toString() ?? "",
     );
 
-    navigateTo(new URLSearchParams(location.search).get("target") ?? "/");
+    navigateTo(new URLSearchParams(location.search).get("target") ?? "/", {
+        external: true,
+    });
 }
 </script>
 

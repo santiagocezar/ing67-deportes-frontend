@@ -1,20 +1,40 @@
 <script lang="ts" setup>
 const route = useRoute();
-const props = defineProps<{
-    href: string;
+const { icon, to, active } = defineProps<{
+    icon: any;
+    iconActive: any;
+    to: string;
+    active: boolean;
 }>();
-const active = computed(() => route.path === props.href);
 </script>
 
 <template>
-    <li class="nav-item">
-        <a
-            class="nav-link"
-            :class="{ active }"
+    <li class="position-relative nav-item text-xl" :class="{ active }">
+        <component class="icon" :is="active ? iconActive : icon" />
+        <NuxtLink
+            class="nav-link stretched-link"
             :aria-current="active ? 'page' : undefined"
-            :href
+            :to
         >
             <slot></slot>
-        </a>
+        </NuxtLink>
     </li>
 </template>
+
+<style scoped>
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+
+    & a {
+        font-size: 0.5em;
+    }
+
+    &.active .icon {
+        color: var(--bs-primary-base);
+    }
+}
+</style>

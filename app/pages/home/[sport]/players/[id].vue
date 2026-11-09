@@ -5,6 +5,7 @@ import {
     type PlayerPhotoListResponse,
 } from "~/utils/openapi";
 
+import ArrowLeft from "~icons/fluent/arrow-left-24-filled";
 import Subtract from "~icons/fluent/subtract-circle-48-filled";
 import Checkmark from "~icons/fluent/checkmark-circle-48-filled";
 import Gallery from "~/components/Gallery.vue";
@@ -15,9 +16,12 @@ const {
     public: { apiBase },
 } = useRuntimeConfig();
 
-const { data: editing, refresh } = await useAPI<Player>(
-    () => `/players/${route.params.id}`,
-);
+const {
+    data: editing,
+    pending,
+    error,
+    refresh,
+} = await useAPI<Player>(() => `/players/${route.params.id}`);
 
 const { data: photos, refresh: refreshPhotos } =
     await useAPI<PlayerPhotoListResponse>(
@@ -49,11 +53,18 @@ const { data: editTeamsData } = await useAPI<TeamsListResponse>("/teams", {
     enabled: computed(() => editing.value !== null),
 });
 
+function reportError(error: unknown) {
+    const body = (error as { data?: { error?: { message?: string } } }).data;
+    message.value = body?.error?.message ?? "Ocurrió un error inesperado.";
+}
+
 function genderLabel(gender: Player["gender"]) {
     return gender === "male" ? "Masculino" : "Femenino";
 }
 
-const team_ids = computed(() => editing.value!.teams.map((team) => team.id));
+const team_ids = computed(
+    () => editing.value?.teams.map((team) => team.id) ?? [],
+);
 
 async function savePlayer(ev: SubmitEvent) {
     ev.preventDefault();
@@ -132,52 +143,61 @@ async function addPhoto(file: File) {
     }
 }
 </script>
+
 <template>
-    <div class="container p-4">
-        <div class="alert theme-danger" role="alert" v-if="message">
-            {{ message }}
+    <NuxtLink
+        class="d-flex align-items-center gap-1 text-decoration-none mb-3"
+        :to="{ name: 'home-sport-players' }"
+    >
+        <ArrowLeft />
+        <span>Volver al listado</span>
+    </NuxtLink>
+
+    <p v-if="pending">Cargando jugador...</p>
+
+    <div v-else-if="error" class="alert theme-danger" role="alert">
+        No se pudo cargar el jugador.
+    </div>
+
+    <template v-else-if="editing">
+        <div class="d-flex flex-wrap align-items-start gap-2">
+            <h1 class="h2 fw-light m-0 flex-grow-1">{{ editing.name }}</h1>
+            <span
+                class="badge badge-subtle"
+                :class="editing.is_enabled ? 'theme-success' : 'theme-danger'"
+            >
+                {{ editing.is_enabled ? "Habilitado" : "Deshabilitado" }}
+            </span>
         </div>
 
-        <template v-if="editing">
-            <h1 class="h4 mb-1">Detalles del jugador #{{ editing.id }}</h1>
+        <hr />
 
-            <div class="form-text">
-                Juega:
-                <a :href="`/sports/${editing.sport.id}`">
-                    {{ editing.sport.name }}
-                    {{ genderLabel(editing.gender!) }}
-                </a>
-            </div>
+        <form class="vstack gap-3" action="#" @submit="savePlayer">
+            <label class="form-field">
+                <span class="form-label">Nombre</span>
+                <input
+                    class="form-control"
+                    id="player-name"
+                    v-model="editing.name"
+                    type="text"
+                    required
+                />
+            </label>
 
-            <form class="vstack gap-3" action="#" @submit="savePlayer">
-                <label class="form-field">
-                    <label for="player-name" class="form-label">Nombre</label>
-                    <input
-                        class="form-control"
-                        id="player-name"
-                        v-model="editing.name"
-                        type="text"
-                        required
-                    />
-                </label>
-
-                <div class="form-group">
-                    <span class="form-label"
-                        >Selección de equipos (máx.
-                        {{ MAX_PLAYER_TEAMS }})</span
+            <div class="form-group">
+                <span class="form-label"
+                    >Selección de equipos (máx. {{ MAX_PLAYER_TEAMS }})</span
+                >
+                <div v-if="!editTeamsData?.teams.length" class="form-text mb-0">
+                    No hay equipos habilitados para esa combinación.
+                </div>
+                <ul v-else class="list-group">
+                    <li
+                        class="list-group-item"
+                        v-for="team in editTeamsData?.teams"
+                        :key="team.id"
                     >
-                    <div
-                        v-if="!editTeamsData?.teams.length"
-                        class="form-text mb-0"
-                    >
-                        No hay equipos habilitados para esa combinación.
-                    </div>
-                    <div v-else class="vstack gap-2">
-                        <div
-                            class="form-field"
-                            v-for="team in editTeamsData?.teams"
-                            :key="team.id"
-                        >
+                        <div class="form-field">
                             <input
                                 class="check"
                                 type="checkbox"
@@ -189,47 +209,47 @@ async function addPhoto(file: File) {
                                 "
                                 @change="toggleTeam(team.id)"
                             />
-                            <label :for="`team-${team.id}`">
+                            <label
+                                class="stretched-link"
+                                :for="`team-${team.id}`"
+                            >
                                 {{ team.name }}
                             </label>
                         </div>
-                    </div>
-                </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="alert theme-danger" role="alert" v-if="message">
+                {{ message }}
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <button
+                    class="btn-outline theme-danger"
+                    type="button"
+                    v-if="editing.is_enabled"
+                    @click="setPlayerEnabled(false)"
+                >
+                    <Subtract />
+                    <span>Deshabilitar</span>
+                </button>
 
-                <div class="d-flex align-items-center gap-2">
-                    <button
-                        class="btn-outline theme-danger"
-                        type="button"
-                        v-if="editing.is_enabled"
-                        @click="setPlayerEnabled(false)"
-                    >
-                        <Subtract />
-                        <span>Deshabilitar</span>
-                    </button>
+                <button
+                    class="btn-outline theme-success"
+                    type="button"
+                    v-else
+                    @click="setPlayerEnabled(true)"
+                >
+                    <Checkmark />
+                    <span>Habilitar</span>
+                </button>
 
-                    <button
-                        class="btn-outline theme-success"
-                        type="button"
-                        v-else
-                        @click="setPlayerEnabled(true)"
-                    >
-                        <Checkmark />
-                        <span>Habilitar</span>
-                    </button>
-
-                    <a
-                        class="btn-outline theme-secondary ms-auto"
-                        href="/teams"
-                    >
-                        Cancelar
-                    </a>
-                    <button class="btn-solid theme-primary">
-                        Guardar cambios
-                    </button>
-                </div>
-            </form>
-        </template>
+                <button class="ms-auto btn-solid theme-primary">
+                    Actualizar datos
+                </button>
+            </div>
+        </form>
         <hr />
+
         <Gallery
             :photoError
             :currentPhotos
@@ -239,5 +259,7 @@ async function addPhoto(file: File) {
             @add="addPhoto"
             @delete="deletePhoto"
         />
-    </div>
+    </template>
+
+    <p v-else>No se encontró el jugador.</p>
 </template>

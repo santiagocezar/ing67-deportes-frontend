@@ -14,17 +14,22 @@ const model = defineModel<string>();
 
 const input = useTemplateRef<HTMLInputElement>("input")
 
-let setDate: (s: string) => void = () => {}
+const setDate = ref<(s: string) => void>(() => {})
 
 let datepicker: Datepicker;
 
 onMounted(() => {
+	console.log("date value:", model.value)
     datepicker = new $bootstrap.Datepicker(input.value)
-    setDate = (s) => datepicker.setSelectedDates([s])
+    setDate.value = (s) => datepicker.setSelectedDates([s])
 })
 onBeforeUnmount(() => {
-    setDate = () => {}
+    setDate.value = () => {}
     datepicker.dispose()
+})
+
+effect(() => {
+	model.value && setDate.value(model.value.split("T", 1)[0]!)
 })
 
 function toISOString(date: string) {
@@ -36,8 +41,7 @@ function onInputChange(event: Event) {
     let s: string
     if (!isNaN(date.getTime())) {
         s = model.value = date.toISOString()
-        setDate(s.split("T", 1)[0]!)
-    }
+	}
 }
 function onDateChange(event: Event) {
     model.value = toISOString((event as unknown as {dates: string[]}).dates[0]!);

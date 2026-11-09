@@ -2,7 +2,7 @@
 
 import { type Client, type ClientMeta, formDataBodySerializer, type Options as Options2, type RequestResult, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, AuthMeData, AuthMeErrors, AuthMeResponses, AuthRefreshData, AuthRefreshErrors, AuthRefreshResponses, AuthSignupData, AuthSignupErrors, AuthSignupResponses, CompetitionsCreateData, CompetitionsCreateErrors, CompetitionsCreateResponses, CompetitionsDisableData, CompetitionsDisableErrors, CompetitionsDisableResponses, CompetitionsEnableData, CompetitionsEnableErrors, CompetitionsEnableResponses, CompetitionsGetData, CompetitionsGetErrors, CompetitionsGetResponses, CompetitionsListData, CompetitionsListErrors, CompetitionsListResponses, CompetitionsReplaceParticipantsData, CompetitionsReplaceParticipantsErrors, CompetitionsReplaceParticipantsResponses, CompetitionsUpdateData, CompetitionsUpdateErrors, CompetitionsUpdateResponses, MatchesGetData, MatchesGetErrors, MatchesGetResponses, MatchesListData, MatchesListErrors, MatchesListResponses, MatchesRandomizeData, MatchesRandomizeErrors, MatchesRandomizeResponses, MatchesUpdateData, MatchesUpdateErrors, MatchesUpdateResponses, PlayerPhotosDeleteData, PlayerPhotosDeleteErrors, PlayerPhotosDeleteResponses, PlayerPhotosGetImageData, PlayerPhotosGetImageErrors, PlayerPhotosGetImageResponses, PlayerPhotosListData, PlayerPhotosListErrors, PlayerPhotosListResponses, PlayerPhotosUploadData, PlayerPhotosUploadErrors, PlayerPhotosUploadResponses, PlayersCreateData, PlayersCreateErrors, PlayersCreateResponses, PlayersDisableData, PlayersDisableErrors, PlayersDisableResponses, PlayersEnableData, PlayersEnableErrors, PlayersEnableResponses, PlayersGetData, PlayersGetErrors, PlayersGetResponses, PlayersListData, PlayersListErrors, PlayersListResponses, PlayersUpdateData, PlayersUpdateErrors, PlayersUpdateResponses, RefereesListData, RefereesListErrors, RefereesListResponses, SportsCreateData, SportsCreateErrors, SportsCreateResponses, SportsDeleteData, SportsDeleteErrors, SportsDeleteResponses, SportsGetData, SportsGetErrors, SportsGetResponses, SportsListData, SportsListErrors, SportsListResponses, SportsUpdateData, SportsUpdateErrors, SportsUpdateResponses, TeamsCreateData, TeamsCreateErrors, TeamsCreateResponses, TeamsDisableData, TeamsDisableErrors, TeamsDisableResponses, TeamsEnableData, TeamsEnableErrors, TeamsEnableResponses, TeamsGetData, TeamsGetErrors, TeamsGetResponses, TeamsListData, TeamsListErrors, TeamsListResponses, TeamsUpdateData, TeamsUpdateErrors, TeamsUpdateResponses } from './types.gen';
+import type { AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, AuthMeData, AuthMeErrors, AuthMeResponses, AuthRefreshData, AuthRefreshErrors, AuthRefreshResponses, AuthSignupData, AuthSignupErrors, AuthSignupResponses, CompetitionsCreateData, CompetitionsCreateErrors, CompetitionsCreateResponses, CompetitionsDisableData, CompetitionsDisableErrors, CompetitionsDisableResponses, CompetitionsEnableData, CompetitionsEnableErrors, CompetitionsEnableResponses, CompetitionsGetData, CompetitionsGetErrors, CompetitionsGetResponses, CompetitionsListData, CompetitionsListErrors, CompetitionsListResponses, CompetitionsReplaceParticipantsData, CompetitionsReplaceParticipantsErrors, CompetitionsReplaceParticipantsResponses, CompetitionsRosterImportOptionsData, CompetitionsRosterImportOptionsErrors, CompetitionsRosterImportOptionsResponses, CompetitionsUpdateData, CompetitionsUpdateErrors, CompetitionsUpdateResponses, MatchesGetData, MatchesGetErrors, MatchesGetResponses, MatchesListData, MatchesListErrors, MatchesListResponses, MatchesRandomizeData, MatchesRandomizeErrors, MatchesRandomizeResponses, MatchesUpdateData, MatchesUpdateErrors, MatchesUpdateResponses, MatchRosterScansFinalizeManualReviewData, MatchRosterScansFinalizeManualReviewErrors, MatchRosterScansFinalizeManualReviewResponses, MatchRosterScansGetData, MatchRosterScansGetErrors, MatchRosterScansGetGroupImageData, MatchRosterScansGetGroupImageErrors, MatchRosterScansGetGroupImageResponses, MatchRosterScansGetResponses, MatchRosterScansListData, MatchRosterScansListErrors, MatchRosterScansListResponses, MatchRosterScansManualReviewsListData, MatchRosterScansManualReviewsListErrors, MatchRosterScansManualReviewsListResponses, MatchRosterScansManualReviewStatusData, MatchRosterScansManualReviewStatusErrors, MatchRosterScansManualReviewStatusResponses, MatchRosterScansPreviewData, MatchRosterScansPreviewErrors, MatchRosterScansPreviewResponses, MatchRosterScansProcessData, MatchRosterScansProcessErrors, MatchRosterScansProcessResponses, PlayerPhotosDeleteData, PlayerPhotosDeleteErrors, PlayerPhotosDeleteResponses, PlayerPhotosGetImageData, PlayerPhotosGetImageErrors, PlayerPhotosGetImageResponses, PlayerPhotosListData, PlayerPhotosListErrors, PlayerPhotosListResponses, PlayerPhotosUploadData, PlayerPhotosUploadErrors, PlayerPhotosUploadResponses, PlayerSanctionsAnnulData, PlayerSanctionsAnnulErrors, PlayerSanctionsAnnulResponses, PlayerSanctionsCreateFromMatchData, PlayerSanctionsCreateFromMatchErrors, PlayerSanctionsCreateFromMatchResponses, PlayerSanctionsGetData, PlayerSanctionsGetErrors, PlayerSanctionsGetResponses, PlayerSanctionsListData, PlayerSanctionsListErrors, PlayerSanctionsListResponses, PlayerSanctionsUpdateData, PlayerSanctionsUpdateErrors, PlayerSanctionsUpdateResponses, PlayersCreateData, PlayersCreateErrors, PlayersCreateResponses, PlayersDisableData, PlayersDisableErrors, PlayersDisableResponses, PlayersEnableData, PlayersEnableErrors, PlayersEnableResponses, PlayersGetData, PlayersGetErrors, PlayersGetResponses, PlayersListData, PlayersListErrors, PlayersListResponses, PlayersUpdateData, PlayersUpdateErrors, PlayersUpdateResponses, RefereesListData, RefereesListErrors, RefereesListResponses, SportsCreateData, SportsCreateErrors, SportsCreateResponses, SportsDeleteData, SportsDeleteErrors, SportsDeleteResponses, SportsGetData, SportsGetErrors, SportsGetResponses, SportsListData, SportsListErrors, SportsListResponses, SportsUpdateData, SportsUpdateErrors, SportsUpdateResponses, TeamsCreateData, TeamsCreateErrors, TeamsCreateResponses, TeamsDisableData, TeamsDisableErrors, TeamsDisableResponses, TeamsEnableData, TeamsEnableErrors, TeamsEnableResponses, TeamsGetData, TeamsGetErrors, TeamsGetResponses, TeamsListData, TeamsListErrors, TeamsListResponses, TeamsUpdateData, TeamsUpdateErrors, TeamsUpdateResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
   /**
@@ -225,6 +225,34 @@ export const competitionsReplaceParticipants = <ThrowOnError extends boolean = f
 });
 
 /**
+ * List eligible historical rosters
+ */
+export const competitionsRosterImportOptions = <ThrowOnError extends boolean = false>(options: Options<CompetitionsRosterImportOptionsData, ThrowOnError>): RequestResult<CompetitionsRosterImportOptionsResponses, CompetitionsRosterImportOptionsErrors, ThrowOnError> => (options.client ?? client).get<CompetitionsRosterImportOptionsResponses, CompetitionsRosterImportOptionsErrors, ThrowOnError>({
+  security: [{
+      key: 'AccessTokenAuth',
+      scheme: 'bearer',
+      type: 'http'
+    }],
+  url: '/competitions/{competition_id}/roster-import-options',
+  ...options
+});
+
+/**
+ * List historical manual roster reviews
+ *
+ * Returns safe review metadata only. Administrators can read all reviews; referees can read reviews for their assigned Matches.
+ */
+export const matchRosterScansManualReviewsList = <ThrowOnError extends boolean = false>(options?: Options<MatchRosterScansManualReviewsListData, ThrowOnError>): RequestResult<MatchRosterScansManualReviewsListResponses, MatchRosterScansManualReviewsListErrors, ThrowOnError> => (options?.client ?? client).get<MatchRosterScansManualReviewsListResponses, MatchRosterScansManualReviewsListErrors, ThrowOnError>({
+  security: [{
+      key: 'AccessTokenAuth',
+      scheme: 'bearer',
+      type: 'http'
+    }],
+  url: '/manual-reviews',
+  ...options
+});
+
+/**
  * Get a Match
  */
 export const matchesGet = <ThrowOnError extends boolean = false>(options: Options<MatchesGetData, ThrowOnError>): RequestResult<MatchesGetResponses, MatchesGetErrors, ThrowOnError> => (options.client ?? client).get<MatchesGetResponses, MatchesGetErrors, ThrowOnError>({
@@ -250,6 +278,93 @@ export const matchesUpdate = <ThrowOnError extends boolean = false>(options: Opt
   ...options,
   headers: {
     'Content-Type': 'application/json',
+    ...options.headers
+  }
+});
+
+/**
+ * Read the derived Match biometric-audit state
+ *
+ * Returns whether at least one unexpired pending manual review remains for the Match, with safe lifecycle counts.
+ */
+export const matchRosterScansManualReviewStatus = <ThrowOnError extends boolean = false>(options: Options<MatchRosterScansManualReviewStatusData, ThrowOnError>): RequestResult<MatchRosterScansManualReviewStatusResponses, MatchRosterScansManualReviewStatusErrors, ThrowOnError> => (options.client ?? client).get<MatchRosterScansManualReviewStatusResponses, MatchRosterScansManualReviewStatusErrors, ThrowOnError>({
+  security: [{
+      key: 'AccessTokenAuth',
+      scheme: 'bearer',
+      type: 'http'
+    }],
+  url: '/matches/{match_id}/manual-review-status',
+  ...options
+});
+
+/**
+ * Create a global Player sanction from a Match
+ */
+export const playerSanctionsCreateFromMatch = <ThrowOnError extends boolean = false>(options: Options<PlayerSanctionsCreateFromMatchData, ThrowOnError>): RequestResult<PlayerSanctionsCreateFromMatchResponses, PlayerSanctionsCreateFromMatchErrors, ThrowOnError> => (options.client ?? client).post<PlayerSanctionsCreateFromMatchResponses, PlayerSanctionsCreateFromMatchErrors, ThrowOnError>({
+  security: [{
+      key: 'AccessTokenAuth',
+      scheme: 'bearer',
+      type: 'http'
+    }],
+  url: '/matches/{match_id}/players/{player_id}/sanctions',
+  ...options,
+  headers: {
+    'Content-Type': 'application/json',
+    ...options.headers
+  }
+});
+
+/**
+ * List protected Match roster scan history
+ *
+ * Returns immutable scan snapshots for one Match Team, newest first. Group images, file references, raw image bytes, and embeddings are never returned.
+ */
+export const matchRosterScansList = <ThrowOnError extends boolean = false>(options: Options<MatchRosterScansListData, ThrowOnError>): RequestResult<MatchRosterScansListResponses, MatchRosterScansListErrors, ThrowOnError> => (options.client ?? client).get<MatchRosterScansListResponses, MatchRosterScansListErrors, ThrowOnError>({
+  security: [{
+      key: 'AccessTokenAuth',
+      scheme: 'bearer',
+      type: 'http'
+    }],
+  url: '/matches/{match_id}/teams/{team_id}/roster-scans',
+  ...options
+});
+
+/**
+ * Persist a confirmed Match roster scan
+ *
+ * Reprocesses a group image after explicit retention confirmation. Embeddings are never stored or returned. A private group image and pending manual review are created only when the final result has an unknown face.
+ */
+export const matchRosterScansProcess = <ThrowOnError extends boolean = false>(options: Options<MatchRosterScansProcessData, ThrowOnError>): RequestResult<MatchRosterScansProcessResponses, MatchRosterScansProcessErrors, ThrowOnError> => (options.client ?? client).post<MatchRosterScansProcessResponses, MatchRosterScansProcessErrors, ThrowOnError>({
+  ...formDataBodySerializer,
+  security: [{
+      key: 'AccessTokenAuth',
+      scheme: 'bearer',
+      type: 'http'
+    }],
+  url: '/matches/{match_id}/teams/{team_id}/roster-scans',
+  ...options,
+  headers: {
+    'Content-Type': null,
+    ...options.headers
+  }
+});
+
+/**
+ * Preview a non-persistent Match roster scan
+ *
+ * Runs the approved group-image validation and recognition process without creating scan history, a manual review, a file reference, or a stored image.
+ */
+export const matchRosterScansPreview = <ThrowOnError extends boolean = false>(options: Options<MatchRosterScansPreviewData, ThrowOnError>): RequestResult<MatchRosterScansPreviewResponses, MatchRosterScansPreviewErrors, ThrowOnError> => (options.client ?? client).post<MatchRosterScansPreviewResponses, MatchRosterScansPreviewErrors, ThrowOnError>({
+  ...formDataBodySerializer,
+  security: [{
+      key: 'AccessTokenAuth',
+      scheme: 'bearer',
+      type: 'http'
+    }],
+  url: '/matches/{match_id}/teams/{team_id}/roster-scans/preview',
+  ...options,
+  headers: {
+    'Content-Type': null,
     ...options.headers
   }
 });
@@ -370,7 +485,7 @@ export const playerPhotosList = <ThrowOnError extends boolean = false>(options: 
 /**
  * Upload a Player photo
  *
- * Stores one validated PNG or JPG reference image of at most 5 MB. An enabled Player may have at most three; each image must contain exactly one sufficiently large detected face.
+ * Stores one validated PNG or JPG reference image of at most 5 MB. An enabled Player may have at most three; each image must contain exactly one sufficiently large detected face. Later uploads must match a stored photo of the same Player.
  */
 export const playerPhotosUpload = <ThrowOnError extends boolean = false>(options: Options<PlayerPhotosUploadData, ThrowOnError>): RequestResult<PlayerPhotosUploadResponses, PlayerPhotosUploadErrors, ThrowOnError> => (options.client ?? client).post<PlayerPhotosUploadResponses, PlayerPhotosUploadErrors, ThrowOnError>({
   ...formDataBodySerializer,
@@ -390,7 +505,7 @@ export const playerPhotosUpload = <ThrowOnError extends boolean = false>(options
 /**
  * Delete a Player photo
  *
- * Permanently deletes one reference photo. The last photo may be deleted; automatic recognition then requires manual resolution.
+ * Permanently deletes one reference photo. An initial reference cannot be deleted while another photo exists. The last photo may be deleted; automatic recognition then requires manual resolution.
  */
 export const playerPhotosDelete = <ThrowOnError extends boolean = false>(options: Options<PlayerPhotosDeleteData, ThrowOnError>): RequestResult<PlayerPhotosDeleteResponses, PlayerPhotosDeleteErrors, ThrowOnError> => (options.client ?? client).delete<PlayerPhotosDeleteResponses, PlayerPhotosDeleteErrors, ThrowOnError>({
   security: [{
@@ -410,6 +525,21 @@ export const playerPhotosDelete = <ThrowOnError extends boolean = false>(options
 export const playerPhotosGetImage = <ThrowOnError extends boolean = false>(options: Options<PlayerPhotosGetImageData, ThrowOnError>): RequestResult<PlayerPhotosGetImageResponses, PlayerPhotosGetImageErrors, ThrowOnError> => (options.client ?? client).get<PlayerPhotosGetImageResponses, PlayerPhotosGetImageErrors, ThrowOnError>({ url: '/players/{player_id}/photos/{photo_id}', ...options });
 
 /**
+ * List a Player's sanctions
+ *
+ * Returns a reconciled, filtered, paginated sanction history. Pages contain at most 25 records.
+ */
+export const playerSanctionsList = <ThrowOnError extends boolean = false>(options: Options<PlayerSanctionsListData, ThrowOnError>): RequestResult<PlayerSanctionsListResponses, PlayerSanctionsListErrors, ThrowOnError> => (options.client ?? client).get<PlayerSanctionsListResponses, PlayerSanctionsListErrors, ThrowOnError>({
+  security: [{
+      key: 'AccessTokenAuth',
+      scheme: 'bearer',
+      type: 'http'
+    }],
+  url: '/players/{player_id}/sanctions',
+  ...options
+});
+
+/**
  * List referees
  */
 export const refereesList = <ThrowOnError extends boolean = false>(options?: Options<RefereesListData, ThrowOnError>): RequestResult<RefereesListResponses, RefereesListErrors, ThrowOnError> => (options?.client ?? client).get<RefereesListResponses, RefereesListErrors, ThrowOnError>({
@@ -419,6 +549,104 @@ export const refereesList = <ThrowOnError extends boolean = false>(options?: Opt
       type: 'http'
     }],
   url: '/referees',
+  ...options
+});
+
+/**
+ * Get a protected Match roster scan
+ *
+ * Returns one immutable scan snapshot and its safe manual-review lifecycle summary. Group images, file references, raw image bytes, and embeddings are never returned.
+ */
+export const matchRosterScansGet = <ThrowOnError extends boolean = false>(options: Options<MatchRosterScansGetData, ThrowOnError>): RequestResult<MatchRosterScansGetResponses, MatchRosterScansGetErrors, ThrowOnError> => (options.client ?? client).get<MatchRosterScansGetResponses, MatchRosterScansGetErrors, ThrowOnError>({
+  security: [{
+      key: 'AccessTokenAuth',
+      scheme: 'bearer',
+      type: 'http'
+    }],
+  url: '/roster-scans/{scan_id}',
+  ...options
+});
+
+/**
+ * Download retained private group-image evidence
+ *
+ * Returns the original private PNG or JPEG only to an administrator or the assigned referee while its manual review remains pending. The response has no URL, filename, validators, range support, or cache.
+ */
+export const matchRosterScansGetGroupImage = <ThrowOnError extends boolean = false>(options: Options<MatchRosterScansGetGroupImageData, ThrowOnError>): RequestResult<MatchRosterScansGetGroupImageResponses, MatchRosterScansGetGroupImageErrors, ThrowOnError> => (options.client ?? client).get<MatchRosterScansGetGroupImageResponses, MatchRosterScansGetGroupImageErrors, ThrowOnError>({
+  security: [{
+      key: 'AccessTokenAuth',
+      scheme: 'bearer',
+      type: 'http'
+    }],
+  url: '/roster-scans/{scan_id}/group-image',
+  ...options
+});
+
+/**
+ * Finalize one historical manual roster review
+ *
+ * Allows only the Match's assigned referee to submit one immutable, complete decision for every automated unknown face. A membership choice is checked against the frozen Competition roster.
+ */
+export const matchRosterScansFinalizeManualReview = <ThrowOnError extends boolean = false>(options: Options<MatchRosterScansFinalizeManualReviewData, ThrowOnError>): RequestResult<MatchRosterScansFinalizeManualReviewResponses, MatchRosterScansFinalizeManualReviewErrors, ThrowOnError> => (options.client ?? client).put<MatchRosterScansFinalizeManualReviewResponses, MatchRosterScansFinalizeManualReviewErrors, ThrowOnError>({
+  security: [{
+      key: 'AccessTokenAuth',
+      scheme: 'bearer',
+      type: 'http'
+    }],
+  url: '/roster-scans/{scan_id}/manual-review',
+  ...options,
+  headers: {
+    'Content-Type': 'application/json',
+    ...options.headers
+  }
+});
+
+/**
+ * Get a Player sanction
+ *
+ * Returns one reconciled Player sanction.
+ */
+export const playerSanctionsGet = <ThrowOnError extends boolean = false>(options: Options<PlayerSanctionsGetData, ThrowOnError>): RequestResult<PlayerSanctionsGetResponses, PlayerSanctionsGetErrors, ThrowOnError> => (options.client ?? client).get<PlayerSanctionsGetResponses, PlayerSanctionsGetErrors, ThrowOnError>({
+  security: [{
+      key: 'AccessTokenAuth',
+      scheme: 'bearer',
+      type: 'http'
+    }],
+  url: '/sanctions/{sanction_id}',
+  ...options
+});
+
+/**
+ * Update an active Player sanction
+ *
+ * Administrators may update any active sanction. Its creating referee may update it only while the source Match is in progress.
+ */
+export const playerSanctionsUpdate = <ThrowOnError extends boolean = false>(options: Options<PlayerSanctionsUpdateData, ThrowOnError>): RequestResult<PlayerSanctionsUpdateResponses, PlayerSanctionsUpdateErrors, ThrowOnError> => (options.client ?? client).put<PlayerSanctionsUpdateResponses, PlayerSanctionsUpdateErrors, ThrowOnError>({
+  security: [{
+      key: 'AccessTokenAuth',
+      scheme: 'bearer',
+      type: 'http'
+    }],
+  url: '/sanctions/{sanction_id}',
+  ...options,
+  headers: {
+    'Content-Type': 'application/json',
+    ...options.headers
+  }
+});
+
+/**
+ * Annul an active Player sanction
+ *
+ * Administrators may annul an active sanction without deleting history.
+ */
+export const playerSanctionsAnnul = <ThrowOnError extends boolean = false>(options: Options<PlayerSanctionsAnnulData, ThrowOnError>): RequestResult<PlayerSanctionsAnnulResponses, PlayerSanctionsAnnulErrors, ThrowOnError> => (options.client ?? client).patch<PlayerSanctionsAnnulResponses, PlayerSanctionsAnnulErrors, ThrowOnError>({
+  security: [{
+      key: 'AccessTokenAuth',
+      scheme: 'bearer',
+      type: 'http'
+    }],
+  url: '/sanctions/{sanction_id}/annul',
   ...options
 });
 

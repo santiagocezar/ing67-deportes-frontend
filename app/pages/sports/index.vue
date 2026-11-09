@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { SportListResponse } from "~/utils/openapi";
 
+import Edit from "~icons/fluent/chevron-right-48-filled";
 import Add from "~icons/fluent/add-circle-48-filled";
 
 const { data } = await useAPI<SportListResponse>("/sports");
@@ -19,31 +20,29 @@ const { data } = await useAPI<SportListResponse>("/sports");
                 Nuevo
             </a>
         </div>
+        <div
+            class="card mb-4 d-flex flex-row gap-4 p-2 align-items-center"
+            v-for="sport in data.sports"
+            :key="sport.id"
+        >
+            <strong class="ps-4 flex-grow-1 text-lg">
+                {{ sport.name }}
+            </strong>
+            <div class="fg-2 text-sm">
+                <div>
+                    Plantel · <strong>{{ sport.max_players }}</strong>
+                </div>
+                <div>
+                    Cancha · <strong>{{ sport.max_players_in_game }}</strong>
+                </div>
+            </div>
 
-        <div class="table-responsive" v-if="data">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Máx. de jugadores</th>
-                        <th>Jugadores en cancha</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="sport in data.sports" :key="sport.id">
-                        <td>{{ sport.id }}</td>
-                        <td>
-                            <a :href="`/sports/${sport.id}`">
-                                {{ sport.name }}
-                            </a>
-                        </td>
-                        <td>{{ sport.max_players }}</td>
-                        <td>{{ sport.max_players_in_game }}</td>
-                    </tr>
-                </tbody>
-            </table>
+            <a
+                class="btn-solid btn-icon stretched-link"
+                :href="`/sports/${sport.id}`"
+            >
+                <Edit />
+            </a>
         </div>
-        <p v-else>Hubo un problema para cargar los datos</p>
     </div>
 </template>

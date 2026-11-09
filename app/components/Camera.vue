@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import Dismiss from "~icons/fluent/dismiss-24-regular";
 
-const SIZE = 512;
+const props = withDefaults(
+    defineProps<{
+        size?: number;
+    }>(),
+    { size: 512 },
+);
 
 const emit = defineEmits<{
     (e: "upload", blob: Blob | null): void;
@@ -42,8 +47,9 @@ function snap() {
     controller?.abort();
     controller = null;
 
+    const size = props.size;
     const canvas = document.createElement("canvas");
-    canvas.width = canvas.height = SIZE;
+    canvas.width = canvas.height = size;
     const ctx = canvas.getContext("2d");
 
     if (!ctx) {
@@ -51,11 +57,11 @@ function snap() {
         return;
     }
 
-    const scale = Math.max(SIZE / video.videoWidth, SIZE / video.videoHeight);
+    const scale = Math.max(size / video.videoWidth, size / video.videoHeight);
     const w = video.videoWidth * scale;
     const h = video.videoHeight * scale;
 
-    ctx.drawImage(video, SIZE / 2 - w / 2, SIZE / 2 - h / 2, w, h);
+    ctx.drawImage(video, size / 2 - w / 2, size / 2 - h / 2, w, h);
 
     canvas.toBlob((blob) => emit("upload", blob), "image/jpeg", 0.8);
 }
@@ -94,7 +100,7 @@ onBeforeUnmount(() => {
 
         <div class="camera__controls">
             <button
-                class="camera__cancel"
+                class="btn-solid btn-outline theme-danger"
                 aria-label="cancel"
                 type="button"
                 @click="emit('upload', null)"
@@ -124,6 +130,7 @@ onBeforeUnmount(() => {
     justify-content: stretch;
     overflow: hidden;
     z-index: 100;
+    border: none;
     background: #000;
     color: #fff;
 }
@@ -151,10 +158,6 @@ onBeforeUnmount(() => {
     justify-items: center;
     justify-content: space-evenly;
     align-self: end;
-}
-
-.camera__cancel {
-    font-size: 1.5rem;
 }
 
 .camera__capture {

@@ -2,9 +2,10 @@
 import {
     type CompetitionDetailResponse,
     type RefereeListResponse,
-    type SportListResponse,
     type TeamListResponse,
 } from "~/utils/openapi";
+
+import ArrowLeft from "~icons/fluent/arrow-left-24-filled";
 
 type Gender = "male" | "female";
 
@@ -13,32 +14,32 @@ const MAX_COMPETITION_TEAMS = 16;
 
 const { $api } = useNuxtApp();
 
-const { data: sportsData } = await useAPI<SportListResponse>("/sports");
+const route = useRoute();
+const sportId = computed(() => Number(route.params.sport));
+
 const { data: refereesData } = await useAPI<RefereeListResponse>("/referees");
 
 const value = reactive<{
     name: string;
-    sport_id: number | "";
     gender: Gender | "";
     starts_at: string;
     ends_at: string;
     referee_ids: number[];
 }>({
     name: "",
-    sport_id: "",
     gender: "",
     starts_at: "",
     ends_at: "",
     referee_ids: [],
 });
 
-const canPickTeams = computed(() => Boolean(value.sport_id && value.gender));
+const canPickTeams = computed(() => Boolean(value.gender));
 
 const { data: teamsData } = await useAPI<TeamListResponse>("/teams", {
     query: computed(() => ({
         status: "enabled",
         sort: "name_asc",
-        sport_id: value.sport_id,
+        sport_id: sportId.value,
         gender_category: value.gender,
     })),
     enabled: canPickTeams,
@@ -66,8 +67,8 @@ function toggleReferee(id: number) {
 }
 
 function validate(): string | null {
-    if (!value.sport_id || !value.gender) {
-        return "Seleccioná un deporte y un género.";
+    if (!value.gender) {
+        return "Seleccioná un género.";
     }
     if (selectedTeamIds.value.length < MIN_COMPETITION_TEAMS) {
         return `Seleccioná al menos ${MIN_COMPETITION_TEAMS} equipos.`;
@@ -93,7 +94,7 @@ async function addCompetition(ev: SubmitEvent) {
             method: "POST",
             body: {
                 name: value.name,
-                sport_id: value.sport_id,
+                sport_id: sportId.value,
                 gender: value.gender,
                 starts_at: value.starts_at,
                 ends_at: value.ends_at,
@@ -110,12 +111,12 @@ async function addCompetition(ev: SubmitEvent) {
         return;
     }
 
-    await navigateTo(`/competitions/${competition.id}`);
+    await navigateTo(`/home/${sportId.value}/competitions/${competition.id}`);
 }
 
-// La selección de equipos deja de ser válida si cambian el deporte o el género.
+// La selección de equipos deja de ser válida si cambia el género.
 watch(
-    () => [value.sport_id, value.gender],
+    () => value.gender,
     () => {
         selectedTeams.value = {};
     },
@@ -123,14 +124,21 @@ watch(
 </script>
 
 <template>
-    <div class="container p-4">
+    <div>
         <div class="alert theme-danger" role="alert" v-if="message">
             {{ message }}
         </div>
 
-        <h1 class="h4 mb-3">Agregar competencia</h1>
+        <NuxtLink
+            class="d-flex align-items-center gap-1 text-decoration-none mb-3"
+            :to="{ name: 'home-sport' }"
+        >
+            <ArrowLeft />
+            <span>Volver al listado</span>
+        </NuxtLink>
+        <h1 class="h2 fw-light m-0">Agregar competencia</h1>
 
-        <form class="vstack gap-3" action="#" @submit="addCompetition">
+        <form class="vstack gap-3 mt-3" action="#" @submit="addCompetition">
             <div class="form-field">
                 <label for="name" class="form-label">Nombre</label>
                 <input
@@ -142,38 +150,18 @@ watch(
                 />
             </div>
 
-            <div class="row g-3">
-                <div class="md:col-6 form-field">
-                    <label for="sport_id" class="form-label"> Deporte </label>
-                    <select
-                        class="form-control"
-                        id="sport_id"
-                        v-model="value.sport_id"
-                        required
-                    >
-                        <option value="">Elegir deporte</option>
-                        <option
-                            v-for="sport in sportsData?.sports"
-                            :key="sport.id"
-                            :value="sport.id"
-                        >
-                            {{ sport.name }}
-                        </option>
-                    </select>
-                </div>
-                <div class="md:col-6 form-field">
-                    <label for="gender" class="form-label">Género</label>
-                    <select
-                        class="form-control"
-                        id="gender"
-                        v-model="value.gender"
-                        required
-                    >
-                        <option value="">Elegir género</option>
-                        <option value="male">Masculino</option>
-                        <option value="female">Femenino</option>
-                    </select>
-                </div>
+            <div class="form-field">
+                <label for="gender" class="form-label">Género</label>
+                <select
+                    class="form-control"
+                    id="gender"
+                    v-model="value.gender"
+                    required
+                >
+                    <option value="">Elegir género</option>
+                    <option value="male">Masculino</option>
+                    <option value="female">Femenino</option>
+                </select>
             </div>
 
             <div class="row g-3">
@@ -235,7 +223,10 @@ watch(
             </div>
 
             <div class="d-flex align-items-center gap-2">
-                <a class="btn-outline theme-secondary" href="/competitions">
+                <a
+                    class="btn-outline theme-secondary"
+                    :href="`/home/${sportId}`"
+                >
                     Cancelar
                 </a>
                 <button

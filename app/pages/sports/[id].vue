@@ -54,7 +54,6 @@ async function saveSport(ev: SubmitEvent) {
 </script>
 
 <template>
-    <div class="container p-4">
         <div class="alert theme-danger" role="alert" v-if="message">
             {{ message }}
         </div>

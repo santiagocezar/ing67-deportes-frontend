@@ -1,96 +1,56 @@
 <script setup lang="ts">
-import {
-    type PlayerResponse as Player,
-    type PlayerListResponse,
-    type SportsListResponse,
-    type TeamListResponse,
-} from "~/utils/openapi";
+import type { TeamListResponse } from "~/utils/openapi";
 
 import Filter from "~icons/fluent/filter-32-filled";
-import Search from "~icons/fluent/search-48-filled";
 import Add from "~icons/fluent/add-48-filled";
 
-type PlayerStatus = "enabled" | "disabled" | "all";
-type PlayerSort = "name_asc" | "created_at_desc";
+type Gender = "male" | "female";
+type TeamStatus = "enabled" | "disabled" | "all";
+type TeamSort = "name_asc" | "created_at_desc";
+
+const route = useRoute();
 
 const filters = reactive({
     search: "",
-    sport_id: "" as number | "",
-    gender: "" as Player["gender"] | "",
-    team_id: "" as number | "",
-    status: "enabled" as PlayerStatus,
-    sort: "name_asc" as PlayerSort,
+    gender_category: "" as Gender | "",
+    status: "enabled" as TeamStatus,
+    sort: "name_asc" as TeamSort,
     page: 1,
 });
 
-const playersQuery = computed(() => {
+const teamsQuery = computed(() => {
     const query: Record<string, string | number> = {
+        sport_id: route.params.sport,
         status: filters.status,
         sort: filters.sort,
         page: filters.page,
     };
 
     if (filters.search.trim()) query.search = filters.search.trim();
-    if (filters.sport_id) query.sport_id = filters.sport_id;
-    if (filters.gender) query.gender = filters.gender;
-    if (filters.team_id) query.team_id = filters.team_id;
+    if (filters.gender_category)
+        query.gender_category = filters.gender_category;
 
     return query;
 });
 
-const { data } = await useAPI<PlayerListResponse>("/players", {
-    query: playersQuery,
+const { data } = await useAPI<TeamListResponse>("/teams", {
+    query: teamsQuery,
 });
 
-const { data: sportsData } = await useAPI<SportsListResponse>("/sports");
-
-// Los equipos del filtro se acotan al deporte y al género elegidos.
-const filterTeamsQuery = computed(() => {
-    const query: Record<string, string | number> = {
-        status: "enabled",
-        sort: "name_asc",
-    };
-
-    if (filters.sport_id) query.sport_id = filters.sport_id;
-    if (filters.gender) query.gender_category = filters.gender;
-
-    return query;
-});
-
-const { data: filterTeamsData } = await useAPI<TeamListResponse>("/teams", {
-    query: filterTeamsQuery,
-});
-
-const message = ref("");
-
-function genderLabel(gender: Player["gender"]) {
+function genderLabel(gender: Gender) {
     return gender === "male" ? "Masculino" : "Femenino";
-}
-
-function formatDate(date: string) {
-    return new Date(date).toLocaleDateString();
 }
 
 // Cambiar un filtro vuelve a la primera página del listado.
 watch(
     () => [
         filters.search,
-        filters.sport_id,
-        filters.gender,
-        filters.team_id,
+        filters.gender_category,
         filters.status,
         filters.sort,
     ],
     () => {
         filters.page = 1;
-    },
-);
-
-// El equipo elegido deja de ser válido si cambian el deporte o el género.
-watch(
-    () => [filters.sport_id, filters.gender],
-    () => {
-        filters.team_id = "";
     },
 );
 
@@ -100,22 +60,20 @@ function goToPage(page: number) {
 </script>
 
 <template>
-    <div class="container p-4">
-        <div class="d-flex align-items-center mb-3">
-            <h1 class="h4 mb-0">Jugadores</h1>
-            <a
+    <div>
+        <div class="d-flex align-items-center mb-4">
+            <h2 class="h2 fw-light m-0">Equipos</h2>
+            <NuxtLink
                 class="btn-solid btn-styled theme-accent ms-auto"
-                href="/players/new"
+                :to="{ name: 'home-sport-teams-new' }"
                 aria-label="Agregar nuevo"
             >
                 <Add />
                 Nuevo
-            </a>
+            </NuxtLink>
         </div>
 
-        <p class="notification is-danger" v-if="message">{{ message }}</p>
-
-        <form class="mb-3 search is-flex" action="#" @submit.prevent>
+        <form class="mb-3 search d-flex" action="#" @submit.prevent>
             <div class="hstack gap-2" role="search">
                 <button
                     class="btn-solid btn-styled btn-icon theme-primary"
@@ -150,55 +108,17 @@ function goToPage(page: number) {
                 </div>
                 <div class="dialog-body d-flex flex-column gap-3">
                     <div class="form-field">
-                        <label for="filters-sport_id" class="form-label">
-                            Deporte
-                        </label>
-                        <select
-                            class="form-control"
-                            id="filters-sport_id"
-                            v-model="filters.sport_id"
-                        >
-                            <option value="">Todos</option>
-                            <option
-                                v-for="sport in sportsData?.sports"
-                                :key="sport.id"
-                                :value="sport.id"
-                            >
-                                {{ sport.name }}
-                            </option>
-                        </select>
-                    </div>
-                    <div class="form-field">
                         <label for="filters-gender" class="form-label">
                             Género
                         </label>
                         <select
                             class="form-control"
                             id="filters-gender"
-                            v-model="filters.gender"
+                            v-model="filters.gender_category"
                         >
                             <option value="">Todos</option>
                             <option value="male">Masculino</option>
                             <option value="female">Femenino</option>
-                        </select>
-                    </div>
-                    <div class="form-field">
-                        <label for="filters-team_id" class="form-label">
-                            Equipo
-                        </label>
-                        <select
-                            class="form-control"
-                            id="filters-team_id"
-                            v-model="filters.team_id"
-                        >
-                            <option value="">Todos</option>
-                            <option
-                                v-for="team in filterTeamsData?.teams"
-                                :key="team.id"
-                                :value="team.id"
-                            >
-                                {{ team.name }}
-                            </option>
                         </select>
                     </div>
                     <div class="form-field">
@@ -248,62 +168,39 @@ function goToPage(page: number) {
             </dialog>
         </form>
 
-        <div class="player-grid" v-if="data">
-            <a
+        <div class="team-grid" v-if="data">
+            <NuxtLink
                 class="cell player card text-decoration-none"
-                v-for="player in data.players"
-                :href="`/players/${player.id}`"
-                :key="player.id"
+                v-for="team in data.teams"
+                :key="team.id"
+                :to="{
+                    name: 'home-sport-teams-id',
+                    params: { id: team.id },
+                }"
             >
-                <!-- <td>
-                {{ player.id }}
-            </td> -->
                 <div class="card-body">
                     <h4 class="card-title">
-                        <span class="pr-2">
-                            {{ player.name }}
+                        <span>
+                            {{ team.name }}
                         </span>
                     </h4>
-
-                    <!-- <button -->
-                    <!--     class="card-header-icon" -->
-                    <!--     aria-label="Editar" -->
-                    <!--     v-if="player.is_enabled" -->
-                    <!--     @click="startEdit(player)" -->
-                    <!-- > -->
-                    <!--     <span class="icon"> -->
-                    <!--         <Edit /> -->
-                    <!--     </span> -->
-                    <!-- </button> -->
-                    <div>
-                        <strong>
-                            {{ player.sport.name }}
-                            {{ genderLabel(player.gender) }}
-                        </strong>
-                        en
-                        {{
-                            player.teams.map((team) => team.name).join(", ") ||
-                            "-"
-                        }}
-                    </div>
                 </div>
 
-                <div class="card-footer d-flex justify-content-between">
-                    <small class="fg-2">
-                        Registrado {{ formatDate(player.created_at) }}
-                    </small>
-                    <small class="fg-2">
-                        {{ player.is_enabled ? "Habilitado" : "Deshabilitado" }}
+                <div class="card-footer d-flex fg-2">
+                    <small> Plantel {{ genderLabel(team.gender) }} </small
+                    ><small class="ms-auto">
+                        {{ team.is_enabled ? "Habilitado" : "Deshabilitado" }}
                     </small>
                 </div>
-            </a>
+            </NuxtLink>
         </div>
+
         <p v-else>Hubo un problema para cargar los datos</p>
 
         <nav
             class="d-flex flex-wrap align-items-center gap-2"
             v-if="data && data.pagination.total_pages > 1"
-            aria-label="Paginación de jugadores"
+            aria-label="Paginación de equipos"
         >
             <ul class="pagination mb-0">
                 <li
@@ -343,7 +240,7 @@ function goToPage(page: number) {
                 {{ data.pagination.total_pages }} ({{
                     data.pagination.total_items
                 }}
-                jugadores)
+                equipos)
             </p>
         </nav>
     </div>
@@ -353,54 +250,11 @@ function goToPage(page: number) {
 .search {
     display: flex;
     gap: 1rem;
-
-    .control {
-        flex-grow: 1;
-    }
 }
 
-#more-filters {
-    &:popover-open {
-        display: grid;
-    }
-
-    grid-template-columns: auto 1fr;
-    gap: 0.5rem;
-
-    & .label {
-        text-align: right;
-        margin: 0;
-    }
-
-    & .field {
-        display: grid;
-        grid-column: span 2;
-        grid-template-columns: subgrid;
-        justify-items: stretch;
-        align-items: center;
-    }
-}
-
-.player {
-    height: 100%;
-}
-
-.player-grid {
+.team-grid {
     display: grid;
     gap: 0.5rem;
     grid-template-columns: repeat(auto-fill, minmax(24rem, 1fr));
-}
-
-.sideside {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
-
-    .field {
-        width: 100%;
-        .select {
-            width: 100%;
-        }
-    }
 }
 </style>

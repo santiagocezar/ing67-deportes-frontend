@@ -267,6 +267,70 @@ export type LoginRequest = {
 };
 
 /**
+ * ManualReviewCompetitionResponse
+ */
+export type ManualReviewCompetitionResponse = {
+  /**
+   * Id
+   */
+  id: number;
+  /**
+   * Name
+   */
+  name: string;
+};
+
+/**
+ * ManualReviewMatchResponse
+ */
+export type ManualReviewMatchResponse = {
+  /**
+   * Ends At
+   */
+  ends_at: string | null;
+  /**
+   * Id
+   */
+  id: number;
+  /**
+   * Starts At
+   */
+  starts_at: string | null;
+  /**
+   * Status
+   */
+  status: string;
+};
+
+/**
+ * ManualReviewScanResponse
+ */
+export type ManualReviewScanResponse = {
+  /**
+   * Created At
+   */
+  created_at: string;
+  /**
+   * Id
+   */
+  id: number;
+};
+
+/**
+ * ManualReviewTeamResponse
+ */
+export type ManualReviewTeamResponse = {
+  /**
+   * Id
+   */
+  id: number;
+  /**
+   * Name
+   */
+  name: string;
+};
+
+/**
  * MatchCompetitionResponse
  */
 export type MatchCompetitionResponse = {
@@ -288,6 +352,32 @@ export type MatchListResponse = {
    * Matches
    */
   matches: Array<MatchResponse>;
+};
+
+/**
+ * MatchManualReviewStatusResponse
+ */
+export type MatchManualReviewStatusResponse = {
+  /**
+   * Expired Review Count
+   */
+  expired_review_count: number;
+  /**
+   * Match Id
+   */
+  match_id: number;
+  /**
+   * Pending Review Count
+   */
+  pending_review_count: number;
+  /**
+   * Requires Biometric Audit
+   */
+  requires_biometric_audit: boolean;
+  /**
+   * Resolved Review Count
+   */
+  resolved_review_count: number;
 };
 
 /**
@@ -318,6 +408,331 @@ export type MatchResponse = {
   status: 'incomplete' | 'scheduled' | 'in_progress' | 'finished';
   team_1: CompetitionTeamResponse;
   team_2: CompetitionTeamResponse;
+};
+
+/**
+ * MatchRosterScanFaceResponse
+ */
+export type MatchRosterScanFaceResponse = {
+  /**
+   * Bottom
+   */
+  bottom: number;
+  /**
+   * Face Index
+   */
+  face_index: number;
+  /**
+   * Left
+   */
+  left: number;
+  /**
+   * Match Percentage
+   */
+  match_percentage: number | null;
+  /**
+   * Player Id
+   */
+  player_id: number | null;
+  /**
+   * Player Name
+   */
+  player_name: string | null;
+  /**
+   * Right
+   */
+  right: number;
+  /**
+   * Sanctions
+   */
+  sanctions: Array<MatchRosterScanSanctionResponse>;
+  /**
+   * Status
+   */
+  status: 'declared_eligible' | 'declared_sanctioned' | 'team_member_undeclared' | 'team_member_undeclared_sanctioned' | 'unknown';
+  /**
+   * Top
+   */
+  top: number;
+};
+
+/**
+ * MatchRosterScanListResponse
+ */
+export type MatchRosterScanListResponse = {
+  pagination: MatchRosterScanPaginationResponse;
+  /**
+   * Roster Scans
+   */
+  roster_scans: Array<MatchRosterScanResponse>;
+};
+
+/**
+ * MatchRosterScanManualReviewDecisionRequest
+ */
+export type MatchRosterScanManualReviewDecisionRequest = {
+  /**
+   * Face Index
+   */
+  face_index: number;
+  /**
+   * Outcome
+   */
+  outcome: 'belongs_to_team' | 'does_not_belong_to_team' | 'inconclusive';
+  /**
+   * Player Id
+   */
+  player_id?: number | null;
+};
+
+/**
+ * MatchRosterScanManualReviewDecisionResponse
+ */
+export type MatchRosterScanManualReviewDecisionResponse = {
+  /**
+   * Created At
+   */
+  created_at: string;
+  /**
+   * Face Index
+   */
+  face_index: number;
+  /**
+   * Outcome
+   */
+  outcome: 'belongs_to_team' | 'does_not_belong_to_team' | 'inconclusive';
+  /**
+   * Player Id
+   */
+  player_id: number | null;
+  /**
+   * Player Name
+   */
+  player_name: string | null;
+};
+
+/**
+ * MatchRosterScanManualReviewFinalizeRequest
+ */
+export type MatchRosterScanManualReviewFinalizeRequest = {
+  /**
+   * Decisions
+   */
+  decisions: Array<MatchRosterScanManualReviewDecisionRequest>;
+};
+
+/**
+ * MatchRosterScanManualReviewListItemResponse
+ */
+export type MatchRosterScanManualReviewListItemResponse = {
+  competition: ManualReviewCompetitionResponse;
+  /**
+   * Expires At
+   */
+  expires_at: string;
+  match: ManualReviewMatchResponse;
+  scan: ManualReviewScanResponse;
+  /**
+   * Status
+   */
+  status: 'pending' | 'resolved' | 'expired';
+  team: ManualReviewTeamResponse;
+  /**
+   * Unknown Face Count
+   */
+  unknown_face_count: number;
+};
+
+/**
+ * MatchRosterScanManualReviewListResponse
+ */
+export type MatchRosterScanManualReviewListResponse = {
+  /**
+   * Manual Reviews
+   */
+  manual_reviews: Array<MatchRosterScanManualReviewListItemResponse>;
+  pagination: MatchRosterScanPaginationResponse;
+};
+
+/**
+ * MatchRosterScanManualReviewResponse
+ */
+export type MatchRosterScanManualReviewResponse = {
+  /**
+   * Decisions
+   */
+  decisions: Array<MatchRosterScanManualReviewDecisionResponse>;
+  /**
+   * Expires At
+   */
+  expires_at: string;
+  /**
+   * Resolved At
+   */
+  resolved_at: string | null;
+  /**
+   * Resolved By User Id
+   */
+  resolved_by_user_id: number | null;
+  /**
+   * Status
+   */
+  status: 'pending' | 'resolved' | 'expired';
+};
+
+/**
+ * MatchRosterScanPaginationResponse
+ */
+export type MatchRosterScanPaginationResponse = {
+  /**
+   * Page
+   */
+  page: number;
+  /**
+   * Per Page
+   */
+  per_page: number;
+  /**
+   * Total Items
+   */
+  total_items: number;
+  /**
+   * Total Pages
+   */
+  total_pages: number;
+};
+
+/**
+ * MatchRosterScanPreviewForm
+ */
+export type MatchRosterScanPreviewForm = {
+  /**
+   * Photo
+   *
+   * One PNG or JPEG group image of at most 10 MiB, between 320 and 4096 pixels per side, with no more than 12000000 total pixels.
+   */
+  photo: Blob | File;
+};
+
+/**
+ * MatchRosterScanPreviewResponse
+ */
+export type MatchRosterScanPreviewResponse = {
+  /**
+   * Count Warning
+   */
+  count_warning: 'recognized_player_count_below_expected' | 'recognized_player_count_above_expected' | null;
+  /**
+   * Detected Faces
+   */
+  detected_faces: number;
+  /**
+   * Expected Players
+   */
+  expected_players: number;
+  /**
+   * Faces
+   */
+  faces: Array<MatchRosterScanFaceResponse>;
+  /**
+   * Match Id
+   */
+  match_id: number;
+  /**
+   * Team Id
+   */
+  team_id: number;
+  /**
+   * Unique Recognized Players
+   */
+  unique_recognized_players: number;
+};
+
+/**
+ * MatchRosterScanResponse
+ */
+export type MatchRosterScanResponse = {
+  /**
+   * Count Warning
+   */
+  count_warning: 'recognized_player_count_below_expected' | 'recognized_player_count_above_expected' | null;
+  /**
+   * Created At
+   */
+  created_at: string;
+  /**
+   * Created By User Id
+   */
+  created_by_user_id: number;
+  /**
+   * Detected Faces
+   */
+  detected_faces: number;
+  /**
+   * Expected Players
+   */
+  expected_players: number;
+  /**
+   * Faces
+   */
+  faces: Array<MatchRosterScanFaceResponse>;
+  /**
+   * Id
+   */
+  id: number;
+  manual_review: MatchRosterScanManualReviewResponse | null;
+  /**
+   * Match Id
+   */
+  match_id: number;
+  /**
+   * Team Id
+   */
+  team_id: number;
+  /**
+   * Unique Recognized Players
+   */
+  unique_recognized_players: number;
+};
+
+/**
+ * MatchRosterScanSanctionResponse
+ */
+export type MatchRosterScanSanctionResponse = {
+  /**
+   * Reason
+   */
+  reason: string;
+  /**
+   * Remaining Matches
+   */
+  remaining_matches: number;
+  /**
+   * Sanction Id
+   */
+  sanction_id: number;
+  /**
+   * Title
+   */
+  title: string;
+};
+
+/**
+ * MatchRosterScanUploadForm
+ */
+export type MatchRosterScanUploadForm = {
+  /**
+   * Photo
+   *
+   * One PNG or JPEG group image of at most 10 MiB, between 320 and 4096 pixels per side, with no more than 12000000 total pixels.
+   */
+  photo: Blob | File;
+  /**
+   * Retain For Manual Review
+   *
+   * Must be the literal form value true. It confirms retention only when the recomputed result contains an unknown face.
+   */
+  retain_for_manual_review: boolean;
 };
 
 /**
@@ -393,6 +808,45 @@ export type PlayerCreateRequest = {
 };
 
 /**
+ * PlayerListItemResponse
+ */
+export type PlayerListItemResponse = {
+  /**
+   * Created At
+   */
+  created_at: string;
+  /**
+   * Disabled At
+   */
+  disabled_at: string | null;
+  /**
+   * Gender
+   */
+  gender: 'male' | 'female';
+  /**
+   * Id
+   */
+  id: number;
+  /**
+   * Is Enabled
+   */
+  is_enabled: boolean;
+  /**
+   * Name
+   */
+  name: string;
+  /**
+   * Primary Photo Path
+   */
+  primary_photo_path?: string | null;
+  sport: SportResponse;
+  /**
+   * Teams
+   */
+  teams: Array<PlayerTeamResponse>;
+};
+
+/**
  * PlayerListResponse
  */
 export type PlayerListResponse = {
@@ -400,7 +854,7 @@ export type PlayerListResponse = {
   /**
    * Players
    */
-  players: Array<PlayerResponse>;
+  players: Array<PlayerListItemResponse>;
 };
 
 /**
@@ -452,6 +906,10 @@ export type PlayerPhotoResponse = {
    */
   id: number;
   /**
+   * Is Initial Reference
+   */
+  is_initial_reference: boolean;
+  /**
    * Player Id
    */
   player_id: number;
@@ -502,6 +960,135 @@ export type PlayerResponse = {
    * Teams
    */
   teams: Array<PlayerTeamResponse>;
+};
+
+/**
+ * PlayerSanctionCreateRequest
+ */
+export type PlayerSanctionCreateRequest = {
+  /**
+   * Reason
+   */
+  reason: string;
+  /**
+   * Suspension Matches
+   */
+  suspension_matches: number;
+  /**
+   * Title
+   */
+  title: string;
+};
+
+/**
+ * PlayerSanctionListResponse
+ */
+export type PlayerSanctionListResponse = {
+  pagination: PlayerSanctionPaginationResponse;
+  /**
+   * Sanctions
+   */
+  sanctions: Array<PlayerSanctionResponse>;
+};
+
+/**
+ * PlayerSanctionPaginationResponse
+ */
+export type PlayerSanctionPaginationResponse = {
+  /**
+   * Page
+   */
+  page: number;
+  /**
+   * Per Page
+   */
+  per_page: number;
+  /**
+   * Total Items
+   */
+  total_items: number;
+  /**
+   * Total Pages
+   */
+  total_pages: number;
+};
+
+/**
+ * PlayerSanctionResponse
+ */
+export type PlayerSanctionResponse = {
+  /**
+   * Annulled At
+   */
+  annulled_at: string | null;
+  annuller: SanctionUserSummary | null;
+  /**
+   * Created At
+   */
+  created_at: string;
+  creator: SanctionUserSummary;
+  /**
+   * Effective At
+   */
+  effective_at: string;
+  /**
+   * Frozen Teams
+   */
+  frozen_teams: Array<SanctionTeamSummary>;
+  /**
+   * Id
+   */
+  id: number;
+  player: SanctionPlayerSummary;
+  /**
+   * Reason
+   */
+  reason: string;
+  /**
+   * Remaining Matches
+   */
+  remaining_matches: number;
+  /**
+   * Served At
+   */
+  served_at: string | null;
+  source_competition: SanctionCompetitionSummary;
+  source_match: SanctionMatchSummary;
+  /**
+   * Status
+   */
+  status: 'active' | 'served' | 'annulled';
+  /**
+   * Suspension Matches
+   */
+  suspension_matches: number;
+  /**
+   * Title
+   */
+  title: string;
+  /**
+   * Updated At
+   */
+  updated_at: string;
+  updater: SanctionUserSummary;
+};
+
+/**
+ * PlayerSanctionUpdateRequest
+ */
+export type PlayerSanctionUpdateRequest = {
+  /**
+   * Reason
+   */
+  reason: string;
+  /**
+   * Suspension Matches
+   */
+  suspension_matches: number;
+  /**
+   * Title
+   */
+  title: string;
 };
 
 /**
@@ -598,6 +1185,64 @@ export type RefereeSummaryResponse = {
 };
 
 /**
+ * RosterImportCompetition
+ */
+export type RosterImportCompetition = {
+  /**
+   * Id
+   */
+  id: number;
+  /**
+   * Name
+   */
+  name: string;
+};
+
+/**
+ * RosterImportPlayer
+ */
+export type RosterImportPlayer = {
+  /**
+   * Name
+   */
+  name: string;
+  /**
+   * Player Id
+   */
+  player_id: number;
+};
+
+/**
+ * RosterImportResponse
+ */
+export type RosterImportResponse = {
+  destination: RosterImportCompetition;
+  source: RosterImportCompetition;
+  /**
+   * Teams
+   */
+  teams: Array<RosterImportTeam>;
+};
+
+/**
+ * RosterImportTeam
+ */
+export type RosterImportTeam = {
+  /**
+   * Name
+   */
+  name: string;
+  /**
+   * Players
+   */
+  players: Array<RosterImportPlayer>;
+  /**
+   * Team Id
+   */
+  team_id: number;
+};
+
+/**
  * RosterPlayerResponse
  */
 export type RosterPlayerResponse = {
@@ -613,6 +1258,84 @@ export type RosterPlayerResponse = {
    * Is Enabled
    */
   is_enabled: boolean;
+  /**
+   * Name
+   */
+  name: string;
+  /**
+   * Primary Photo Path
+   */
+  primary_photo_path?: string | null;
+};
+
+/**
+ * SanctionCompetitionSummary
+ */
+export type SanctionCompetitionSummary = {
+  /**
+   * Id
+   */
+  id: number;
+  /**
+   * Name
+   */
+  name: string;
+};
+
+/**
+ * SanctionMatchSummary
+ */
+export type SanctionMatchSummary = {
+  /**
+   * Ends At
+   */
+  ends_at: string;
+  /**
+   * Id
+   */
+  id: number;
+  /**
+   * Starts At
+   */
+  starts_at: string;
+};
+
+/**
+ * SanctionPlayerSummary
+ */
+export type SanctionPlayerSummary = {
+  /**
+   * Id
+   */
+  id: number;
+  /**
+   * Name
+   */
+  name: string;
+};
+
+/**
+ * SanctionTeamSummary
+ */
+export type SanctionTeamSummary = {
+  /**
+   * Id
+   */
+  id: number;
+  /**
+   * Name
+   */
+  name: string;
+};
+
+/**
+ * SanctionUserSummary
+ */
+export type SanctionUserSummary = {
+  /**
+   * Id
+   */
+  id: number;
   /**
    * Name
    */
@@ -1621,6 +2344,115 @@ export type CompetitionsReplaceParticipantsResponses = {
 
 export type CompetitionsReplaceParticipantsResponse = CompetitionsReplaceParticipantsResponses[keyof CompetitionsReplaceParticipantsResponses];
 
+export type CompetitionsRosterImportOptionsData = {
+  body?: never;
+  path: {
+    /**
+     * Competition Id
+     */
+    competition_id: number;
+  };
+  query: {
+    /**
+     * Source Competition Id
+     */
+    source_competition_id: number;
+  };
+  url: '/competitions/{competition_id}/roster-import-options';
+};
+
+export type CompetitionsRosterImportOptionsErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Conflict
+   */
+  409: ErrorResponse;
+  /**
+   * Unprocessable Entity
+   */
+  422: ErrorResponse;
+  /**
+   * Service Unavailable
+   */
+  503: ErrorResponse;
+};
+
+export type CompetitionsRosterImportOptionsError = CompetitionsRosterImportOptionsErrors[keyof CompetitionsRosterImportOptionsErrors];
+
+export type CompetitionsRosterImportOptionsResponses = {
+  /**
+   * OK
+   */
+  200: RosterImportResponse;
+};
+
+export type CompetitionsRosterImportOptionsResponse = CompetitionsRosterImportOptionsResponses[keyof CompetitionsRosterImportOptionsResponses];
+
+export type MatchRosterScansManualReviewsListData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * Match Id
+     */
+    match_id?: number | null;
+    /**
+     * Status
+     */
+    status?: 'pending' | 'resolved' | 'expired' | 'all';
+    /**
+     * Sort
+     */
+    sort?: 'scan_created_at_desc' | 'scan_created_at_asc';
+    /**
+     * Page
+     */
+    page?: number;
+  };
+  url: '/manual-reviews';
+};
+
+export type MatchRosterScansManualReviewsListErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Unprocessable Entity
+   */
+  422: ErrorResponse;
+  /**
+   * Service Unavailable
+   */
+  503: ErrorResponse;
+};
+
+export type MatchRosterScansManualReviewsListError = MatchRosterScansManualReviewsListErrors[keyof MatchRosterScansManualReviewsListErrors];
+
+export type MatchRosterScansManualReviewsListResponses = {
+  /**
+   * OK
+   */
+  200: MatchRosterScanManualReviewListResponse;
+};
+
+export type MatchRosterScansManualReviewsListResponse = MatchRosterScansManualReviewsListResponses[keyof MatchRosterScansManualReviewsListResponses];
+
 export type MatchesGetData = {
   body?: never;
   path: {
@@ -1720,6 +2552,297 @@ export type MatchesUpdateResponses = {
 };
 
 export type MatchesUpdateResponse = MatchesUpdateResponses[keyof MatchesUpdateResponses];
+
+export type MatchRosterScansManualReviewStatusData = {
+  body?: never;
+  path: {
+    /**
+     * Match Id
+     */
+    match_id: number;
+  };
+  query?: never;
+  url: '/matches/{match_id}/manual-review-status';
+};
+
+export type MatchRosterScansManualReviewStatusErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Unprocessable Entity
+   */
+  422: ErrorResponse;
+  /**
+   * Service Unavailable
+   */
+  503: ErrorResponse;
+};
+
+export type MatchRosterScansManualReviewStatusError = MatchRosterScansManualReviewStatusErrors[keyof MatchRosterScansManualReviewStatusErrors];
+
+export type MatchRosterScansManualReviewStatusResponses = {
+  /**
+   * OK
+   */
+  200: MatchManualReviewStatusResponse;
+};
+
+export type MatchRosterScansManualReviewStatusResponse = MatchRosterScansManualReviewStatusResponses[keyof MatchRosterScansManualReviewStatusResponses];
+
+export type PlayerSanctionsCreateFromMatchData = {
+  body: PlayerSanctionCreateRequest;
+  path: {
+    /**
+     * Match Id
+     */
+    match_id: number;
+    /**
+     * Player Id
+     */
+    player_id: number;
+  };
+  query?: never;
+  url: '/matches/{match_id}/players/{player_id}/sanctions';
+};
+
+export type PlayerSanctionsCreateFromMatchErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Conflict
+   */
+  409: ErrorResponse;
+  /**
+   * Unprocessable Entity
+   */
+  422: ErrorResponse;
+  /**
+   * Service Unavailable
+   */
+  503: ErrorResponse;
+};
+
+export type PlayerSanctionsCreateFromMatchError = PlayerSanctionsCreateFromMatchErrors[keyof PlayerSanctionsCreateFromMatchErrors];
+
+export type PlayerSanctionsCreateFromMatchResponses = {
+  /**
+   * Created
+   */
+  201: PlayerSanctionResponse;
+};
+
+export type PlayerSanctionsCreateFromMatchResponse = PlayerSanctionsCreateFromMatchResponses[keyof PlayerSanctionsCreateFromMatchResponses];
+
+export type MatchRosterScansListData = {
+  body?: never;
+  path: {
+    /**
+     * Match Id
+     */
+    match_id: number;
+    /**
+     * Team Id
+     */
+    team_id: number;
+  };
+  query?: {
+    /**
+     * Page
+     */
+    page?: number;
+  };
+  url: '/matches/{match_id}/teams/{team_id}/roster-scans';
+};
+
+export type MatchRosterScansListErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Unprocessable Entity
+   */
+  422: ErrorResponse;
+  /**
+   * Service Unavailable
+   */
+  503: ErrorResponse;
+};
+
+export type MatchRosterScansListError = MatchRosterScansListErrors[keyof MatchRosterScansListErrors];
+
+export type MatchRosterScansListResponses = {
+  /**
+   * OK
+   */
+  200: MatchRosterScanListResponse;
+};
+
+export type MatchRosterScansListResponse = MatchRosterScansListResponses[keyof MatchRosterScansListResponses];
+
+export type MatchRosterScansProcessData = {
+  body: MatchRosterScanUploadForm;
+  path: {
+    /**
+     * Match Id
+     */
+    match_id: number;
+    /**
+     * Team Id
+     */
+    team_id: number;
+  };
+  query?: never;
+  url: '/matches/{match_id}/teams/{team_id}/roster-scans';
+};
+
+export type MatchRosterScansProcessErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Conflict
+   */
+  409: ErrorResponse;
+  /**
+   * Request Entity Too Large
+   */
+  413: ErrorResponse;
+  /**
+   * Unsupported Media Type
+   */
+  415: ErrorResponse;
+  /**
+   * Unprocessable Entity
+   */
+  422: ErrorResponse;
+  /**
+   * Service Unavailable
+   */
+  503: ErrorResponse;
+};
+
+export type MatchRosterScansProcessError = MatchRosterScansProcessErrors[keyof MatchRosterScansProcessErrors];
+
+export type MatchRosterScansProcessResponses = {
+  /**
+   * Created
+   */
+  201: MatchRosterScanResponse;
+};
+
+export type MatchRosterScansProcessResponse = MatchRosterScansProcessResponses[keyof MatchRosterScansProcessResponses];
+
+export type MatchRosterScansPreviewData = {
+  body: MatchRosterScanPreviewForm;
+  path: {
+    /**
+     * Match Id
+     */
+    match_id: number;
+    /**
+     * Team Id
+     */
+    team_id: number;
+  };
+  query?: never;
+  url: '/matches/{match_id}/teams/{team_id}/roster-scans/preview';
+};
+
+export type MatchRosterScansPreviewErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Conflict
+   */
+  409: ErrorResponse;
+  /**
+   * Request Entity Too Large
+   */
+  413: ErrorResponse;
+  /**
+   * Unsupported Media Type
+   */
+  415: ErrorResponse;
+  /**
+   * Unprocessable Entity
+   */
+  422: ErrorResponse;
+  /**
+   * Service Unavailable
+   */
+  503: ErrorResponse;
+};
+
+export type MatchRosterScansPreviewError = MatchRosterScansPreviewErrors[keyof MatchRosterScansPreviewErrors];
+
+export type MatchRosterScansPreviewResponses = {
+  /**
+   * OK
+   */
+  200: MatchRosterScanPreviewResponse;
+};
+
+export type MatchRosterScansPreviewResponse = MatchRosterScansPreviewResponses[keyof MatchRosterScansPreviewResponses];
 
 export type PlayersListData = {
   body?: never;
@@ -2172,6 +3295,10 @@ export type PlayerPhotosDeleteErrors = {
    */
   404: ErrorResponse;
   /**
+   * Conflict
+   */
+  409: ErrorResponse;
+  /**
    * Unprocessable Entity
    */
   422: ErrorResponse;
@@ -2234,6 +3361,69 @@ export type PlayerPhotosGetImageResponses = {
 
 export type PlayerPhotosGetImageResponse = PlayerPhotosGetImageResponses[keyof PlayerPhotosGetImageResponses];
 
+export type PlayerSanctionsListData = {
+  body?: never;
+  path: {
+    /**
+     * Player Id
+     */
+    player_id: number;
+  };
+  query?: {
+    /**
+     * Status
+     */
+    status?: 'active' | 'served' | 'annulled' | null;
+    /**
+     * Created From
+     */
+    created_from?: string | null;
+    /**
+     * Created To
+     */
+    created_to?: string | null;
+    /**
+     * Page
+     */
+    page?: number;
+  };
+  url: '/players/{player_id}/sanctions';
+};
+
+export type PlayerSanctionsListErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Unprocessable Entity
+   */
+  422: ErrorResponse;
+  /**
+   * Service Unavailable
+   */
+  503: ErrorResponse;
+};
+
+export type PlayerSanctionsListError = PlayerSanctionsListErrors[keyof PlayerSanctionsListErrors];
+
+export type PlayerSanctionsListResponses = {
+  /**
+   * OK
+   */
+  200: PlayerSanctionListResponse;
+};
+
+export type PlayerSanctionsListResponse = PlayerSanctionsListResponses[keyof PlayerSanctionsListResponses];
+
 export type RefereesListData = {
   body?: never;
   path?: never;
@@ -2279,6 +3469,302 @@ export type RefereesListResponses = {
 };
 
 export type RefereesListResponse = RefereesListResponses[keyof RefereesListResponses];
+
+export type MatchRosterScansGetData = {
+  body?: never;
+  path: {
+    /**
+     * Scan Id
+     */
+    scan_id: number;
+  };
+  query?: never;
+  url: '/roster-scans/{scan_id}';
+};
+
+export type MatchRosterScansGetErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Unprocessable Entity
+   */
+  422: ErrorResponse;
+  /**
+   * Service Unavailable
+   */
+  503: ErrorResponse;
+};
+
+export type MatchRosterScansGetError = MatchRosterScansGetErrors[keyof MatchRosterScansGetErrors];
+
+export type MatchRosterScansGetResponses = {
+  /**
+   * OK
+   */
+  200: MatchRosterScanResponse;
+};
+
+export type MatchRosterScansGetResponse = MatchRosterScansGetResponses[keyof MatchRosterScansGetResponses];
+
+export type MatchRosterScansGetGroupImageData = {
+  body?: never;
+  path: {
+    /**
+     * Scan Id
+     */
+    scan_id: number;
+  };
+  query?: never;
+  url: '/roster-scans/{scan_id}/group-image';
+};
+
+export type MatchRosterScansGetGroupImageErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Unprocessable Entity
+   */
+  422: ErrorResponse;
+  /**
+   * Service Unavailable
+   */
+  503: ErrorResponse;
+};
+
+export type MatchRosterScansGetGroupImageError = MatchRosterScansGetGroupImageErrors[keyof MatchRosterScansGetGroupImageErrors];
+
+export type MatchRosterScansGetGroupImageResponses = {
+  /**
+   * The retained private PNG or JPEG group image.
+   */
+  200: Blob | File;
+};
+
+export type MatchRosterScansGetGroupImageResponse = MatchRosterScansGetGroupImageResponses[keyof MatchRosterScansGetGroupImageResponses];
+
+export type MatchRosterScansFinalizeManualReviewData = {
+  body: MatchRosterScanManualReviewFinalizeRequest;
+  path: {
+    /**
+     * Scan Id
+     */
+    scan_id: number;
+  };
+  query?: never;
+  url: '/roster-scans/{scan_id}/manual-review';
+};
+
+export type MatchRosterScansFinalizeManualReviewErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Conflict
+   */
+  409: ErrorResponse;
+  /**
+   * Unprocessable Entity
+   */
+  422: ErrorResponse;
+  /**
+   * Service Unavailable
+   */
+  503: ErrorResponse;
+};
+
+export type MatchRosterScansFinalizeManualReviewError = MatchRosterScansFinalizeManualReviewErrors[keyof MatchRosterScansFinalizeManualReviewErrors];
+
+export type MatchRosterScansFinalizeManualReviewResponses = {
+  /**
+   * OK
+   */
+  200: MatchRosterScanManualReviewResponse;
+};
+
+export type MatchRosterScansFinalizeManualReviewResponse = MatchRosterScansFinalizeManualReviewResponses[keyof MatchRosterScansFinalizeManualReviewResponses];
+
+export type PlayerSanctionsGetData = {
+  body?: never;
+  path: {
+    /**
+     * Sanction Id
+     */
+    sanction_id: number;
+  };
+  query?: never;
+  url: '/sanctions/{sanction_id}';
+};
+
+export type PlayerSanctionsGetErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Unprocessable Entity
+   */
+  422: ErrorResponse;
+  /**
+   * Service Unavailable
+   */
+  503: ErrorResponse;
+};
+
+export type PlayerSanctionsGetError = PlayerSanctionsGetErrors[keyof PlayerSanctionsGetErrors];
+
+export type PlayerSanctionsGetResponses = {
+  /**
+   * OK
+   */
+  200: PlayerSanctionResponse;
+};
+
+export type PlayerSanctionsGetResponse = PlayerSanctionsGetResponses[keyof PlayerSanctionsGetResponses];
+
+export type PlayerSanctionsUpdateData = {
+  body: PlayerSanctionUpdateRequest;
+  path: {
+    /**
+     * Sanction Id
+     */
+    sanction_id: number;
+  };
+  query?: never;
+  url: '/sanctions/{sanction_id}';
+};
+
+export type PlayerSanctionsUpdateErrors = {
+  /**
+   * Bad Request
+   */
+  400: ErrorResponse;
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Conflict
+   */
+  409: ErrorResponse;
+  /**
+   * Unprocessable Entity
+   */
+  422: ErrorResponse;
+  /**
+   * Service Unavailable
+   */
+  503: ErrorResponse;
+};
+
+export type PlayerSanctionsUpdateError = PlayerSanctionsUpdateErrors[keyof PlayerSanctionsUpdateErrors];
+
+export type PlayerSanctionsUpdateResponses = {
+  /**
+   * OK
+   */
+  200: PlayerSanctionResponse;
+};
+
+export type PlayerSanctionsUpdateResponse = PlayerSanctionsUpdateResponses[keyof PlayerSanctionsUpdateResponses];
+
+export type PlayerSanctionsAnnulData = {
+  body?: never;
+  path: {
+    /**
+     * Sanction Id
+     */
+    sanction_id: number;
+  };
+  query?: never;
+  url: '/sanctions/{sanction_id}/annul';
+};
+
+export type PlayerSanctionsAnnulErrors = {
+  /**
+   * Unauthorized
+   */
+  401: ErrorResponse;
+  /**
+   * Forbidden
+   */
+  403: ErrorResponse;
+  /**
+   * Not Found
+   */
+  404: ErrorResponse;
+  /**
+   * Conflict
+   */
+  409: ErrorResponse;
+  /**
+   * Unprocessable Entity
+   */
+  422: ErrorResponse;
+  /**
+   * Service Unavailable
+   */
+  503: ErrorResponse;
+};
+
+export type PlayerSanctionsAnnulError = PlayerSanctionsAnnulErrors[keyof PlayerSanctionsAnnulErrors];
+
+export type PlayerSanctionsAnnulResponses = {
+  /**
+   * OK
+   */
+  200: PlayerSanctionResponse;
+};
+
+export type PlayerSanctionsAnnulResponse = PlayerSanctionsAnnulResponses[keyof PlayerSanctionsAnnulResponses];
 
 export type SportsListData = {
   body?: never;

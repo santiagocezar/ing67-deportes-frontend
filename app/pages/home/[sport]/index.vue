@@ -1,11 +1,7 @@
 <script setup lang="ts">
-import {
-    type CompetitionListResponse,
-    type SportListResponse,
-} from "~/utils/openapi";
+import { type CompetitionListResponse } from "~/utils/openapi";
 
 import Filter from "~icons/fluent/filter-32-filled";
-import Search from "~icons/fluent/search-48-filled";
 import Add from "~icons/fluent/add-48-filled";
 
 type Competition = CompetitionListResponse["competitions"][number];
@@ -15,9 +11,10 @@ type Availability = "enabled" | "disabled" | "all";
 type CompetitionSort = "starts_at_asc" | "starts_at_desc";
 type Gender = Competition["gender"];
 
+const route = useRoute();
+
 const filters = reactive({
     search: "",
-    sport_id: "" as number | "",
     gender: "" as Gender | "",
     lifecycle_status: "" as LifecycleStatus,
     availability: "enabled" as Availability,
@@ -30,10 +27,10 @@ const competitionsQuery = computed(() => {
         availability: filters.availability,
         sort: filters.sort,
         page: filters.page,
+        sport_id: route.params.sport,
     };
 
     if (filters.search.trim()) query.search = filters.search.trim();
-    if (filters.sport_id) query.sport_id = filters.sport_id;
     if (filters.gender) query.gender = filters.gender;
     if (filters.lifecycle_status)
         query.lifecycle_status = filters.lifecycle_status;
@@ -44,8 +41,6 @@ const competitionsQuery = computed(() => {
 const { data } = await useAPI<CompetitionListResponse>("/competitions", {
     query: competitionsQuery,
 });
-
-const { data: sportsData } = await useAPI<SportListResponse>("/sports");
 
 function genderLabel(gender: Gender) {
     return gender === "male" ? "Masculino" : "Femenino";
@@ -60,15 +55,10 @@ function statusLabel(status: CompetitionStatus) {
     }[status];
 }
 
-function formatDate(date: string) {
-    return new Date(date).toLocaleDateString();
-}
-
 // Cambiar un filtro vuelve a la primera página del listado.
 watch(
     () => [
         filters.search,
-        filters.sport_id,
         filters.gender,
         filters.lifecycle_status,
         filters.availability,
@@ -85,17 +75,17 @@ function goToPage(page: number) {
 </script>
 
 <template>
-    <div class="container p-4">
-        <div class="d-flex align-items-center mb-3">
-            <h1 class="h4 mb-0">Competencias</h1>
-            <a
-                class="btn-solid btn-styled theme-accent ms-auto"
-                href="/competitions/new"
+    <div>
+        <div class="d-flex align-items-center mb-4">
+            <h2 class="h2 fw-light m-0">Competencias</h2>
+            <NuxtLink
+                class="btn-solid rounded-pill ms-auto"
+                :to="{ name: 'home-sport-competitions-new' }"
                 aria-label="Agregar nuevo"
             >
                 <Add />
-                Nuevo
-            </a>
+                Nueva
+            </NuxtLink>
         </div>
 
         <form class="mb-3 search d-flex" action="#" @submit.prevent>
@@ -132,25 +122,6 @@ function goToPage(page: number) {
                     ></button>
                 </div>
                 <div class="dialog-body d-flex flex-column gap-3">
-                    <div class="form-field">
-                        <label for="filters-sport_id" class="form-label">
-                            Deporte
-                        </label>
-                        <select
-                            class="form-control"
-                            id="filters-sport_id"
-                            v-model="filters.sport_id"
-                        >
-                            <option value="">Todos</option>
-                            <option
-                                v-for="sport in sportsData?.sports"
-                                :key="sport.id"
-                                :value="sport.id"
-                            >
-                                {{ sport.name }}
-                            </option>
-                        </select>
-                    </div>
                     <div class="form-field">
                         <label for="filters-gender" class="form-label">
                             Género
@@ -231,17 +202,28 @@ function goToPage(page: number) {
             </dialog>
         </form>
 
-        <div class="competition-grid" v-if="data">
-            <a
+        <p v-if="!data">Hubo un problema para cargar los datos</p>
+        <div class="competition-grid" v-else-if="data.competitions.length">
+            <NuxtLink
                 class="cell competition card text-decoration-none"
                 v-for="competition in data.competitions"
-                :href="`/competitions/${competition.id}`"
+                :to="{
+                    name: 'home-sport-competitions-id',
+                    params: { id: competition.id },
+                }"
                 :key="competition.id"
             >
                 <div class="card-body">
                     <div class="d-flex align-items-center gap-2">
                         <h4 class="card-title mb-0">
                             {{ competition.name }}
+
+                            <span
+                                :aria-label="genderLabel(competition.gender)"
+                                class="fg-2 fw-light"
+                            >
+                                {{ genderLabel(competition.gender)[0] }}
+                            </span>
                         </h4>
                         <span
                             class="badge badge-subtle theme-secondary ms-auto"
@@ -255,23 +237,20 @@ function goToPage(page: number) {
                     </div>
 
                     <p>
-                        Desde
                         <strong>
-                            {{ formatDate(competition.starts_at) }}
+                            <NuxtTime :datetime="competition.starts_at" />
                         </strong>
                         hasta
                         <strong>
-                            {{ formatDate(competition.ends_at) }}
+                            <NuxtTime :datetime="competition.ends_at" />
                         </strong>
                     </p>
-                    <p class="fg-2">
-                        {{ competition.sport.name }}
-                        {{ genderLabel(competition.gender) }}
-                    </p>
                 </div>
-            </a>
+            </NuxtLink>
         </div>
-        <p v-else>Hubo un problema para cargar los datos</p>
+        <div class="alert" v-else>
+            No hay ninguna competencia programada o en curso
+        </div>
 
         <nav
             class="d-flex flex-wrap align-items-center gap-2"
