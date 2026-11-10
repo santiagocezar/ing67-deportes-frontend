@@ -29,3 +29,4 @@ export { default as IconShield } from "~icons/fluent/shield-48-regular";
 export { default as IconShieldActive } from "~icons/fluent/shield-48-filled";
 export { default as IconShuffle } from "~icons/fluent/arrow-shuffle-48-filled";
 export { default as IconSubtract } from "~icons/fluent/subtract-circle-48-filled";
+export { default as IconQuestion } from "~icons/fluent/question-48-filled";

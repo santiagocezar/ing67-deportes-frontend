@@ -48,7 +48,7 @@ function onCameraUpload(blob: Blob | null) {
 <template>
     <header class="mb-4 gap-2 d-flex align-items-center">
         <div class="">
-            <h1 class="h4 mb-1">Fotos (máx. {{ max }})</h1>
+            <h2 class="h4 mb-1">Fotos (máx. {{ max }})</h2>
             <div class="form-text">Las fotos se guardan automáticamente</div>
         </div>
         <div class="flex-grow-1"></div>
