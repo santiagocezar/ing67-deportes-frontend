@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { type CompetitionDetailResponse } from "~/utils/openapi";
 
-import ArrowLeft from "~icons/fluent/arrow-left-24-filled";
+import { IconArrowLeft } from "~/assets/icons";
 import CompetitionTeams from "~/components/CompetitionTeams.vue";
 import CompetitionMatches from "~/components/CompetitionMatches.vue";
 
@@ -40,38 +40,33 @@ function statusTheme(status: CompetitionStatus) {
 
 <template>
     <div v-if="data">
-<NuxtLink
+        <NuxtLink
             class="d-flex align-items-center gap-1 text-decoration-none mb-3"
             :to="{
                 name: 'home-sport',
+                params: { sport: route.params.sport },
             }"
         >
-            <ArrowLeft />
-            <span>
-                Volver al listado
-                   </span>
+            <IconArrowLeft />
+            <span> Volver al listado </span>
         </NuxtLink>
         <h1 class="h2 fw-light m-0">{{ data.name }}</h1>
-        <p class="d-flex my-2 gap-2">
-		<span class="fg-2 align-items-center">
+        <div class="d-flex my-2 gap-2">
+            <span class="fg-2 align-items-center">
+                {{ data.sport.name }} {{ genderLabel(data.gender) }}
+            </span>
 
-            {{ data.sport.name }} {{ genderLabel(data.gender) }}
-		</span>
-
-			<div class="flex-grow-1"></div>
-			<span
-                class="badge badge-subtle"
-                :class="statusTheme(data.status)"
-            >
-                {{ statusLabel(data.status) }} </span
-            >
-			<span
+            <div class="flex-grow-1"></div>
+            <span class="badge badge-subtle" :class="statusTheme(data.status)">
+                {{ statusLabel(data.status) }}
+            </span>
+            <span
                 class="badge badge-subtle"
                 :class="data.is_enabled ? 'theme-success' : 'theme-danger'"
             >
                 {{ data.is_enabled ? "Habilitada" : "Deshabilitada" }}
             </span>
-        </p>
+        </div>
         <ul class="nav nav-pills mb-4" id="pills-tab" role="tablist">
             <li class="nav-item" role="presentation">
                 <button

@@ -4,6 +4,8 @@
 > If a request conflicts with a rule here, stop and ask.
 > Keep changes small, explicit, testable, and aligned with the approved business model.
 > Read https://nuxt.com/llms.txt before doing ANY Nuxt related tasks. MUST read AT LEAST the summary, even for minor tasks.
+> The project uses the brand new Bootstrap 6, which differs quite a bit from older versions of Bootstrap. 
+> Make sure to read https://getbootstrap.com/llms.txt to avoid using it wrong, specifically https://getbootstrap.com/docs/6.0/getting-started/approach is absolutely relevant.
 > Use pnpm instead of npm and npx.
 
 ---

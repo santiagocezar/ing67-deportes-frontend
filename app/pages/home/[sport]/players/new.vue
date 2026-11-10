@@ -4,7 +4,7 @@ import {
     type TeamListResponse,
 } from "~/utils/openapi";
 
-import ArrowLeft from "~icons/fluent/arrow-left-24-filled";
+import { IconArrowLeft } from "~/assets/icons";
 
 const MAX_PLAYER_TEAMS = 3;
 
@@ -116,9 +116,12 @@ async function addPlayer(ev: SubmitEvent) {
 
         <NuxtLink
             class="d-flex align-items-center gap-1 text-decoration-none mb-3"
-            :to="{ name: 'home-sport-players' }"
+            :to="{
+                name: 'home-sport-players',
+                params: { sport: route.params.sport },
+            }"
         >
-            <ArrowLeft />
+            <IconArrowLeft />
             <span>Volver al listado</span>
         </NuxtLink>
         <h1 class="h2 fw-light m-0">Nuevo jugador</h1>
@@ -190,12 +193,12 @@ async function addPlayer(ev: SubmitEvent) {
             </div>
 
             <div class="d-flex align-items-center gap-2">
-                <a
+                <NuxtLink
                     class="btn-outline theme-secondary"
-                    :href="`/home/${sportId}/players`"
+                    :to="`/home/${sportId}/players`"
                 >
                     Cancelar
-                </a>
+                </NuxtLink>
                 <button
                     class="btn-solid theme-primary ms-auto"
                     :disabled="saving"

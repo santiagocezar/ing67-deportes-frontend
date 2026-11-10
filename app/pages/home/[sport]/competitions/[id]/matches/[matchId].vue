@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { type MatchResponse } from "~/utils/openapi";
+import {
+    type MatchManualReviewStatusResponse,
+    type MatchResponse,
+    type MatchRosterScanManualReviewListResponse,
+} from "~/utils/openapi";
 
-import ArrowLeft from "~icons/fluent/arrow-left-24-filled";
-import Save from "~icons/fluent/save-24-filled";
-import ScanPerson from "~icons/fluent/scan-person-24-filled";
-import ChevronRight from "~icons/fluent/chevron-right-24-filled";
+import { IconArrowLeft, IconSave, IconScanPerson } from "~/assets/icons";
+import ScanCard from "~/components/ScanCard.vue";
 
 const route = useRoute();
 const { $api } = useNuxtApp();
@@ -19,6 +21,30 @@ const {
     error,
     refresh,
 } = await useAPI<MatchResponse>(() => `/matches/${route.params.matchId}`);
+
+const { data: manualReviewStatus, refresh: refreshManualReviewStatus } =
+    await useAPI<MatchManualReviewStatusResponse>(
+        () => `/matches/${route.params.matchId}/manual-review-status`,
+    );
+
+const { data: pendingReviews, refresh: refreshPendingReviews } =
+    await useAPI<MatchRosterScanManualReviewListResponse>("/manual-reviews", {
+        query: computed(() => ({
+            match_id: Number(route.params.matchId),
+            status: "pending",
+        })),
+    });
+
+async function refreshReviewState() {
+    await Promise.all([refreshManualReviewStatus(), refreshPendingReviews()]);
+}
+
+const pendingReviewCount = computed(
+    () =>
+        manualReviewStatus.value?.pending_review_count ??
+        pendingReviews.value?.manual_reviews.length ??
+        0,
+);
 
 const edited = reactive({
     starts_at: "",
@@ -113,9 +139,13 @@ async function saveMatch(ev: SubmitEvent) {
             class="d-flex align-items-center gap-1 text-decoration-none mb-3"
             :to="{
                 name: 'home-sport-competitions-id',
+                params: {
+                    sport: route.params.sport,
+                    id: route.params.id,
+                },
             }"
         >
-            <ArrowLeft />
+            <IconArrowLeft />
             <span>
                 Volver a
                 {{ match?.competition.name ?? "la competencia" }}
@@ -187,7 +217,7 @@ async function saveMatch(ev: SubmitEvent) {
                 </div>
                 <div class="d-flex justify-content-end">
                     <button class="btn-solid theme-primary" type="submit">
-                        <Save />
+                        <IconSave />
                         <span>Guardar horario</span>
                     </button>
                 </div>
@@ -230,7 +260,17 @@ async function saveMatch(ev: SubmitEvent) {
                                         {{ avatarLetters(player.name) }}
                                     </div>
 
-                                    {{ player.name }}
+                                    <NuxtLink
+                                        :to="{
+                                            name: 'home-sport-players-id',
+                                            params: {
+                                                sport: route.params.sport,
+                                                id: player.id,
+                                            },
+                                        }"
+                                    >
+                                        {{ player.name }}
+                                    </NuxtLink>
                                 </li>
                             </ul>
                             <button
@@ -240,7 +280,7 @@ async function saveMatch(ev: SubmitEvent) {
                                 data-bs-target="#roster-scan-dialog"
                                 @click="openTeamScan(team)"
                             >
-                                <ScanPerson />
+                                <IconScanPerson />
 
                                 <span>Escanear</span>
                             </button>
@@ -249,6 +289,35 @@ async function saveMatch(ev: SubmitEvent) {
                 </div>
             </div>
 
+            <section v-if="pendingReviews?.manual_reviews.length" class="mt-4">
+                <div class="d-flex flex-wrap align-items-start gap-2 mb-3">
+                    <div class="flex-grow-1">
+                        <h2 class="h5 mb-1">Requiere auditoría biométrica</h2>
+                        <p class="fg-2 small mb-0">
+                            {{ pendingReviewCount }}
+                            {{
+                                pendingReviewCount === 1
+                                    ? "revisión pendiente"
+                                    : "revisiones pendientes"
+                            }}
+                        </p>
+                    </div>
+                    <NuxtLink
+                        class="btn-outline btn-sm theme-secondary"
+                        :to="{ name: 'scans' }"
+                    >
+                        Ver todas
+                    </NuxtLink>
+                </div>
+                <div class="vstack gap-2">
+                    <ScanCard
+                        v-for="review in pendingReviews.manual_reviews"
+                        :key="review.scan.id"
+                        :review
+                    />
+                </div>
+            </section>
+
             <dialog
                 id="roster-scan-dialog"
                 class="dialog dialog-scrollable"
@@ -256,7 +325,7 @@ async function saveMatch(ev: SubmitEvent) {
             >
                 <div class="dialog-header">
                     <h2 class="dialog-title">
-                        Escaneo de
+                        Escaneando
                         {{ scanTarget?.name ?? "equipo" }}
                     </h2>
                     <button
@@ -272,6 +341,7 @@ async function saveMatch(ev: SubmitEvent) {
                         :match-id="match.id"
                         :team-id="scanTarget.id"
                         :team-name="scanTarget.name"
+                        @scanned="refreshReviewState"
                     />
                 </div>
             </dialog>

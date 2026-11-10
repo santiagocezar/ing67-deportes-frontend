@@ -1,6 +1,5 @@
 <script lang="ts" setup>
-import Subtract from "~icons/fluent/subtract-circle-48-filled";
-import Checkmark from "~icons/fluent/checkmark-circle-48-filled";
+import { IconCheckmarkCircle, IconSubtract } from "~/assets/icons";
 import { type CompetitionDetailResponse } from "~/utils/openapi";
 
 const emit = defineEmits<{ refresh: [] }>();
@@ -117,7 +116,7 @@ async function setCompetitionEnabled(enabled: boolean) {
                 v-if="editing.is_enabled"
                 @click="setCompetitionEnabled(false)"
             >
-                <Subtract />
+                <IconSubtract />
                 <span>Deshabilitar</span>
             </button>
 
@@ -127,13 +126,16 @@ async function setCompetitionEnabled(enabled: boolean) {
                 v-else
                 @click="setCompetitionEnabled(true)"
             >
-                <Checkmark />
+                <IconCheckmarkCircle />
                 <span>Habilitar</span>
             </button>
 
-            <a class="btn-outline theme-secondary ms-auto" href="/competitions">
+            <NuxtLink
+                class="btn-outline theme-secondary ms-auto"
+                to="/competitions"
+            >
                 Cancelar
-            </a>
+            </NuxtLink>
             <button class="btn-solid theme-primary">Guardar cambios</button>
         </div>
     </form>

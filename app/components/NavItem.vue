@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-const route = useRoute();
 const { icon, to, active } = defineProps<{
     icon: any;
     iconActive: any;

@@ -4,9 +4,7 @@ import type {
     MatchRosterScanResponse,
 } from "~/utils/openapi";
 
-import CameraIcon from "~icons/fluent/camera-24-filled";
-import ImageAdd from "~icons/fluent/image-add-24-filled";
-import ArrowClockwise from "~icons/fluent/arrow-clockwise-24-filled";
+import { IconArrowClockwise, IconCamera, IconImageAdd } from "~/assets/icons";
 
 const props = defineProps<{
     matchId: number;
@@ -14,11 +12,14 @@ const props = defineProps<{
     teamName: string;
 }>();
 
+const emit = defineEmits<{
+    scanned: [MatchRosterScanResponse];
+}>();
+
 const { $api } = useNuxtApp();
 
-const CROP_SIZE = 256;
-const CROP_MARGIN = 0.15;
-
+const retainInputId = useId();
+const retainForManualReview = ref(false);
 const capturing = ref(false);
 const uploading = ref(false);
 const message = ref("");
@@ -28,17 +29,18 @@ const crops = ref<Record<number, string>>({});
 
 let photoObjectUrl: string | null = null;
 
-const summary = computed(() => {
-    if (!scan.value) return "";
-    return `${scan.value.detected_faces} caras detectadas · ${scan.value.unique_recognized_players} de ${scan.value.expected_players} jugadores reconocidos`;
-});
-
 const countWarning = computed(() => {
     if (!scan.value?.count_warning) return "";
     return scan.value.count_warning === "recognized_player_count_below_expected"
         ? "Se reconocieron menos jugadores de los esperados."
         : "Se reconocieron más jugadores de los esperados.";
 });
+
+const unknownFaceCount = computed(
+    () =>
+        scan.value?.faces.filter((face) => face.status === "unknown").length ??
+        0,
+);
 
 function statusLabel(status: MatchRosterScanFaceResponse["status"]) {
     return {
@@ -77,68 +79,19 @@ function setPhotoUrl(file: File) {
     photoUrl.value = photoObjectUrl;
 }
 
-function loadImage(src: string) {
-    return new Promise<HTMLImageElement>((resolve, reject) => {
-        const image = new Image();
-        image.onload = () => resolve(image);
-        image.onerror = () => reject(new Error("No se pudo leer la foto."));
-        image.src = src;
-    });
-}
-
-function cropFace(image: HTMLImageElement, face: MatchRosterScanFaceResponse) {
-    const sourceWidth = image.naturalWidth;
-    const sourceHeight = image.naturalHeight;
-    if (!sourceWidth || !sourceHeight) return null;
-
-    const boxWidth = Math.max(1, face.right - face.left);
-    const boxHeight = Math.max(1, face.bottom - face.top);
-    const margin = Math.round(Math.max(boxWidth, boxHeight) * CROP_MARGIN);
-
-    const left = Math.max(0, Math.min(face.left - margin, sourceWidth - 1));
-    const top = Math.max(0, Math.min(face.top - margin, sourceHeight - 1));
-    const right = Math.max(
-        left + 1,
-        Math.min(face.right + margin, sourceWidth),
-    );
-    const bottom = Math.max(
-        top + 1,
-        Math.min(face.bottom + margin, sourceHeight),
-    );
-
-    const width = right - left;
-    const height = bottom - top;
-    const scale = Math.min(1, CROP_SIZE / Math.max(width, height));
-
-    const canvas = document.createElement("canvas");
-    canvas.width = Math.max(1, Math.round(width * scale));
-    canvas.height = Math.max(1, Math.round(height * scale));
-
-    const context = canvas.getContext("2d");
-    if (!context) return null;
-
-    context.drawImage(
-        image,
-        left,
-        top,
-        width,
-        height,
-        0,
-        0,
-        canvas.width,
-        canvas.height,
-    );
-
-    return canvas.toDataURL("image/jpeg", 0.85);
-}
-
 async function buildCrops(url: string, faces: MatchRosterScanFaceResponse[]) {
     try {
         const image = await loadImage(url);
         const next: Record<number, string> = {};
 
         for (const face of faces) {
-            const crop = cropFace(image, face);
+            const crop = cropImage(
+                image,
+                face.top,
+                face.left,
+                face.right,
+                face.bottom,
+            );
             if (crop) next[face.face_index] = crop;
         }
 
@@ -149,6 +102,11 @@ async function buildCrops(url: string, faces: MatchRosterScanFaceResponse[]) {
 }
 
 async function processPhoto(file: File) {
+    if (!retainForManualReview.value) {
+        message.value = "Confirmá la retención de la foto para poder escanear.";
+        return;
+    }
+
     capturing.value = false;
     uploading.value = true;
     message.value = "";
@@ -159,6 +117,7 @@ async function processPhoto(file: File) {
 
     const body = new FormData();
     body.set("photo", file);
+    body.set("retain_for_manual_review", "true");
 
     try {
         const response = await $api<MatchRosterScanResponse>(
@@ -170,6 +129,7 @@ async function processPhoto(file: File) {
         );
 
         scan.value = response;
+        emit("scanned", response);
 
         if (photoUrl.value) {
             await buildCrops(photoUrl.value, response.faces);
@@ -236,25 +196,36 @@ onBeforeUnmount(revokePhotoUrl);
             <template v-else-if="scan">
                 <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
                     <div>
-                        <p class="fw-semibold mb-0">Resultado del escaneo</p>
-                        <p class="fg-2 small mb-0">{{ summary }}</p>
+                        <p class="h4 fw-regular mb-0">Resultados</p>
                     </div>
                     <button
                         class="btn-outline theme-secondary ms-auto"
                         type="button"
                         @click="reset"
                     >
-                        <ArrowClockwise />
-                        <span>Escanear de nuevo</span>
+                        <IconArrowClockwise />
+                        <span>Reintentar</span>
                     </button>
                 </div>
 
                 <div
-                    v-if="countWarning"
-                    class="alert theme-warning mb-3"
+                    class="alert mb-3 vstack"
+                    :class="{
+                        'theme-warning': countWarning,
+                        'theme-primary': !countWarning,
+                    }"
                     role="alert"
                 >
-                    {{ countWarning }}
+                    <div v-if="countWarning">
+                        {{ countWarning }}
+                    </div>
+                    <div v-else>La cantidad de jugadores es correcta</div>
+
+                    <div class="small mb-0">
+                        Se esperaban {{ scan.expected_players }} jugadores,
+                        {{ scan.unique_recognized_players }} reconocidos.
+                        {{ scan.detected_faces }} caras en total.
+                    </div>
                 </div>
 
                 <div class="vstack gap-2">
@@ -263,65 +234,86 @@ onBeforeUnmount(revokePhotoUrl);
                         :key="face.face_index"
                         class="card"
                     >
-                        <div class="card-body d-flex gap-3">
-                            <img
-                                v-if="crops[face.face_index]"
-                                class="roster-scan__crop"
-                                :src="crops[face.face_index]"
-                                :alt="
-                                    face.player_name ??
-                                    'Jugador no identificado'
-                                "
-                            />
-                            <div v-else class="roster-scan__crop"></div>
-
-                            <div class="flex-grow-1">
-                                <div
-                                    class="d-flex flex-wrap align-items-center gap-2"
-                                >
-                                    <p class="fw-semibold mb-0">
-                                        {{
-                                            face.player_name ??
-                                            "Jugador no identificado"
-                                        }}
-                                    </p>
-                                    <span
-                                        class="badge badge-subtle"
-                                        :class="statusTheme(face.status)"
-                                    >
-                                        {{ statusLabel(face.status) }}
-                                    </span>
+                        <div class="card-body gap-3">
+                            <div class="hstack">
+                                <img
+                                    v-if="crops[face.face_index]"
+                                    class="avatar me-4 avatar-xl"
+                                    style="border: none"
+                                    :src="crops[face.face_index]"
+                                    :alt="
+                                        face.player_name ??
+                                        'Jugador no identificado'
+                                    "
+                                />
+                                <div v-else class="avatar me-4">
+                                    {{ avatarLetters(face.player_name ?? "?") }}
                                 </div>
-
-                                <p
-                                    v-if="face.match_percentage !== null"
-                                    class="fg-2 small mb-1"
-                                >
-                                    {{ face.match_percentage }}% de coincidencia
-                                </p>
-
-                                <ul
-                                    v-if="face.sanctions.length"
-                                    class="roster-scan__sanctions small mb-0"
-                                >
-                                    <li
-                                        v-for="sanction in face.sanctions"
-                                        :key="sanction.sanction_id"
+                                <div class="flex-grow-1">
+                                    <div
+                                        class="d-flex flex-wrap align-items-center gap-2 row-gap-0"
                                     >
-                                        <strong>{{ sanction.title }}</strong>
-                                        — {{ sanction.reason }} ({{
-                                            sanction.remaining_matches
-                                        }}
-                                        {{
-                                            sanction.remaining_matches === 1
-                                                ? "partido"
-                                                : "partidos"
-                                        }})
-                                    </li>
-                                </ul>
+                                        <p class="fw-semibold mb-0 flex-grow-1">
+                                            {{
+                                                face.player_name ??
+                                                "Jugador no identificado"
+                                            }}
+                                        </p>
+                                        <span
+                                            class="badge badge-subtle"
+                                            :class="statusTheme(face.status)"
+                                        >
+                                            {{ statusLabel(face.status) }}
+                                        </span>
+                                    </div>
+
+                                    <p
+                                        v-if="face.match_percentage !== null"
+                                        class="fg-2 small mb-1"
+                                    >
+                                        {{ face.match_percentage }}% de
+                                        coincidencia
+                                    </p>
+                                </div>
                             </div>
+                            <ul
+                                v-if="face.sanctions.length"
+                                class="roster-scan__sanctions small mb-0"
+                            >
+                                <li
+                                    v-for="sanction in face.sanctions"
+                                    :key="sanction.sanction_id"
+                                >
+                                    <strong>{{ sanction.title }}</strong>
+                                    — {{ sanction.reason }} ({{
+                                        sanction.remaining_matches
+                                    }}
+                                    {{
+                                        sanction.remaining_matches === 1
+                                            ? "partido"
+                                            : "partidos"
+                                    }})
+                                </li>
+                            </ul>
                         </div>
                     </article>
+                </div>
+                <div
+                    v-if="scan.manual_review"
+                    class="alert theme-info mt-3"
+                    role="alert"
+                >
+                    La foto quedó retenida para revisión manual hasta el
+                    {{ formatDateTime(scan.manual_review.expires_at) }}.
+                    <strong>
+                        {{ unknownFaceCount }}
+                        {{
+                            unknownFaceCount === 1
+                                ? "cara requiere"
+                                : "caras requieren"
+                        }}
+                        revisión.
+                    </strong>
                 </div>
             </template>
 
@@ -336,26 +328,46 @@ onBeforeUnmount(revokePhotoUrl);
                     pesar como máximo 10 MiB.
                 </p>
 
-                <div class="d-flex flex-wrap gap-2">
-                    <button
-                        class="btn-solid theme-accent"
-                        type="button"
-                        @click="capturing = true"
-                    >
-                        <CameraIcon />
-                        <span>Tomar foto</span>
-                    </button>
+                <div class="form-field row-gap-0 mb-2">
+                    <input
+                        :id="retainInputId"
+                        v-model="retainForManualReview"
+                        class="check"
+                        type="checkbox"
+                    />
+                    <label :for="retainInputId">
+                        Acepto la potencial retención de la foto
+                    </label>
+                    <div class="form-text">
+                        La foto se guarda solo si el escaneo detecta alguna cara
+                        desconocida.
+                    </div>
+                </div>
 
-                    <label class="btn-outline theme-secondary">
-                        <ImageAdd />
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <label
+                        class="btn-outline btn-lg theme-secondary"
+                        :class="{ disabled: !retainForManualReview }"
+                    >
+                        <IconImageAdd />
                         <span>Subir foto</span>
                         <input
                             class="d-none"
                             type="file"
                             accept="image/png,image/jpeg"
+                            :disabled="!retainForManualReview"
                             @change="onFileUpload"
                         />
                     </label>
+                    <button
+                        class="btn-solid btn-lg theme-accent"
+                        type="button"
+                        :disabled="!retainForManualReview"
+                        @click="capturing = true"
+                    >
+                        <IconCamera />
+                        <span>Tomar foto</span>
+                    </button>
                 </div>
             </div>
         </template>

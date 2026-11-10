@@ -5,9 +5,11 @@ import {
     type PlayerPhotoListResponse,
 } from "~/utils/openapi";
 
-import ArrowLeft from "~icons/fluent/arrow-left-24-filled";
-import Subtract from "~icons/fluent/subtract-circle-48-filled";
-import Checkmark from "~icons/fluent/checkmark-circle-48-filled";
+import {
+    IconArrowLeft,
+    IconCheckmarkCircle,
+    IconSubtract,
+} from "~/assets/icons";
 import Gallery from "~/components/Gallery.vue";
 
 const route = useRoute();
@@ -147,9 +149,12 @@ async function addPhoto(file: File) {
 <template>
     <NuxtLink
         class="d-flex align-items-center gap-1 text-decoration-none mb-3"
-        :to="{ name: 'home-sport-players' }"
+        :to="{
+            name: 'home-sport-players',
+            params: { sport: route.params.sport },
+        }"
     >
-        <ArrowLeft />
+        <IconArrowLeft />
         <span>Volver al listado</span>
     </NuxtLink>
 
@@ -229,7 +234,7 @@ async function addPhoto(file: File) {
                     v-if="editing.is_enabled"
                     @click="setPlayerEnabled(false)"
                 >
-                    <Subtract />
+                    <IconSubtract />
                     <span>Deshabilitar</span>
                 </button>
 
@@ -239,7 +244,7 @@ async function addPhoto(file: File) {
                     v-else
                     @click="setPlayerEnabled(true)"
                 >
-                    <Checkmark />
+                    <IconCheckmarkCircle />
                     <span>Habilitar</span>
                 </button>
 

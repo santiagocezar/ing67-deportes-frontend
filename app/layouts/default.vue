@@ -1,60 +1,76 @@
 <script setup lang="ts">
-import People from "~icons/fluent/people-48-regular";
-import PeopleActive from "~icons/fluent/people-48-filled";
-
-import Home from "~icons/fluent/home-48-regular";
-import HomeActive from "~icons/fluent/home-48-filled";
-
-import Shield from "~icons/fluent/shield-48-regular";
-import ShieldActive from "~icons/fluent/shield-48-filled";
-
-import type { AuthMeResponse } from "~/utils/openapi";
-
-const auth = useAuth();
-const { data: me, refresh: refreshMe } = await useAPI<AuthMeResponse>(
-    "/auth/me",
-    {
-        onResponseError: () => {}, // evitar redirigir
-    },
-);
+import {
+    IconHome,
+    IconHomeActive,
+    IconPeople,
+    IconPeopleActive,
+    IconScanPersonActive,
+    IconScanPersonRegular,
+    IconShield,
+    IconShieldActive,
+} from "~/assets/icons";
 
 const route = useRoute();
 
 const sportId = computed(() => route.params.sport);
 
-const routes = computed(() => [{ icon: Home }]);
+const routes = computed(() => [
+    {
+        icon: IconHome,
+        iconActive: IconHomeActive,
+        to: `/home/${sportId.value}`,
+        label: "Inicio",
+    },
+    {
+        icon: IconPeople,
+        iconActive: IconPeopleActive,
+        to: `/home/${sportId.value}/players`,
+        label: "Jugadores",
+    },
+    {
+        icon: IconShield,
+        iconActive: IconShieldActive,
+        to: `/home/${sportId.value}/teams`,
+        label: "Equipos",
+    },
+    {
+        icon: IconScanPersonRegular,
+        iconActive: IconScanPersonActive,
+        to: "/scans",
+        label: "Revisiones",
+    },
+]);
 
-watch(
-    () => auth.token,
-    () => refreshMe(),
-);
+const active = computed(() => {
+    let score = 0;
+    let path = "";
+    for (const r of routes.value) {
+        if (route.path.startsWith(r.to) && r.to.length >= score) {
+            path = r.to;
+            score = path.length;
+        }
+    }
+    return path;
+});
 </script>
 
 <template>
     <slot></slot>
-    <div class="sticky-bottom p-4 md:p-6 mt-auto mx-auto">
+    <div
+        class="sticky-bottom p-4 md:p-6 mt-auto mx-auto z-sticky"
+        v-if="sportId"
+    >
         <nav class="shadow-xl card card-translucent">
             <ul class="m-0 card-body nav-buttons">
                 <NavItem
-                    :icon="Home"
-                    :iconActive="HomeActive"
-                    :to="`/home/${sportId}/`"
+                    v-for="{ icon, iconActive, to, label } in routes"
+                    :key="to"
+                    :icon
+                    :iconActive
+                    :to
+                    :active="to === active"
                 >
-                    Inicio
-                </NavItem>
-                <NavItem
-                    :icon="People"
-                    :iconActive="PeopleActive"
-                    :to="`/home/${sportId}/players`"
-                >
-                    Jugadores
-                </NavItem>
-                <NavItem
-                    :icon="Shield"
-                    :iconActive="ShieldActive"
-                    :to="`/home/${sportId}/teams`"
-                >
-                    Equipos
+                    {{ label }}
                 </NavItem>
             </ul>
         </nav>

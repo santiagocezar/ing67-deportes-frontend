@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Dismiss from "~icons/fluent/dismiss-24-regular";
+import { IconDismiss } from "~/assets/icons";
 
 const props = withDefaults(
     defineProps<{
@@ -81,7 +81,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <div class="camera" popover="manual" id="camera-thing">
+    <div class="camera z-dialog" popover="manual" id="camera-thing">
         <div v-show="noWork" class="camera__fallback">
             <p>No se pudo conectar con una cámara</p>
             <small>Suba un archivo</small>
@@ -105,7 +105,7 @@ onBeforeUnmount(() => {
                 type="button"
                 @click="emit('upload', null)"
             >
-                <Dismiss />
+                <IconDismiss />
             </button>
             <button
                 class="camera__capture"
@@ -122,6 +122,7 @@ onBeforeUnmount(() => {
 <style scoped>
 .camera {
     display: grid;
+    padding: 0;
     grid-template-rows: 1fr auto;
     aspect-ratio: 1 / 1;
     width: 100%;
@@ -129,7 +130,6 @@ onBeforeUnmount(() => {
     align-items: stretch;
     justify-content: stretch;
     overflow: hidden;
-    z-index: 100;
     border: none;
     background: #000;
     color: #fff;
@@ -144,6 +144,7 @@ onBeforeUnmount(() => {
 }
 
 .camera__viewfinder {
+    width: 100%;
     justify-self: center;
     min-height: 0;
 }

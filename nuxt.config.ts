@@ -10,11 +10,7 @@ export default defineNuxtConfig({
             apiBase: import.meta.env.NUXT_PUBLIC_API_BASE,
         },
     },
-    css: [
-        // "~/assets/style/bulma.scss",
-        "bootstrap/dist/css/bootstrap.css",
-        "~/assets/style/index.css",
-    ],
+    css: ["bootstrap/dist/css/bootstrap.css", "~/assets/style/index.css"],
     modules: ["unplugin-icons/nuxt", "@nuxt/fonts"],
     fonts: {
         families: [

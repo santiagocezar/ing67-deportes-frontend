@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import type { SportListResponse } from "~/utils/openapi";
 
-import ArrowRight from "~icons/fluent/chevron-right-48-filled";
-import Add from "~icons/fluent/add-48-filled";
+import { IconChevronRight } from "~/assets/icons";
 import Header from "~/components/Header.vue";
 
 const { data } = await useAPI<SportListResponse>("/sports");
@@ -11,6 +10,7 @@ const { data } = await useAPI<SportListResponse>("/sports");
 <template>
     <Header title="Deportes"> </Header>
     <div class="container p-4">
+        <h2 class="h2 fw-light m-0">Equipos</h2>
         <div
             class="card mb-4 d-flex flex-row gap-4 p-2 align-items-center"
             v-for="sport in data?.sports"
@@ -27,22 +27,12 @@ const { data } = await useAPI<SportListResponse>("/sports");
                     Cancha · <strong>{{ sport.max_players_in_game }}</strong>
                 </div>
             </div>
-            <a
+            <NuxtLink
                 class="btn-solid btn-icon stretched-link"
-                :href="`/home/${sport.id}`"
+                :to="`/home/${sport.id}`"
             >
-                <ArrowRight />
-            </a>
-        </div>
-        <div class="text-end">
-            <a
-                class="btn-solid btn-lg rounded-pill align-self-end"
-                href="/sports/new"
-                aria-label="Agregar nuevo"
-            >
-                <Add />
-                Nuevo
-            </a>
+                <IconChevronRight />
+            </NuxtLink>
         </div>
     </div>
 </template>

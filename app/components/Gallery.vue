@@ -1,8 +1,5 @@
 <script setup lang="ts">
-import CameraIcon from "~icons/fluent/camera-24-filled";
-import ImageAdd from "~icons/fluent/image-add-48-filled";
-import Delete from "~icons/fluent/delete-24-regular";
-//     import { Add, Camera, Delete, ImageAdd } from "$lib/components/icons";
+import { IconCamera, IconDelete, IconImageAdd } from "~/assets/icons";
 
 const emit = defineEmits<{
     (e: "delete", id: string): void;
@@ -57,9 +54,7 @@ function onCameraUpload(blob: Blob | null) {
         <div class="flex-grow-1"></div>
         <label class="gallery__upload">
             <div :disabled="disabled || null" class="btn-solid">
-                <span class="icon">
-                    <ImageAdd />
-                </span>
+                <IconImageAdd />
                 <span>Subir</span>
             </div>
             <input
@@ -78,9 +73,7 @@ function onCameraUpload(blob: Blob | null) {
             @click="capturing = true"
         >
             <span>Tomar</span>
-            <span class="icon">
-                <CameraIcon />
-            </span>
+            <IconCamera />
         </button>
     </header>
 
@@ -94,9 +87,9 @@ function onCameraUpload(blob: Blob | null) {
             :key="src"
             class="gallery__item"
         >
-            <a :href="src">
+            <NuxtLink :to="src">
                 <img class="gallery__photo img-thumbnail" :src alt="" />
-            </a>
+            </NuxtLink>
             <button
                 v-if="pending"
                 disabled
@@ -111,7 +104,7 @@ function onCameraUpload(blob: Blob | null) {
                 type="button"
                 @click="emit('delete', src)"
             >
-                <Delete />
+                <IconDelete />
             </button>
         </div>
     </div>

@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import type { TeamListResponse } from "~/utils/openapi";
 
-import Filter from "~icons/fluent/filter-32-filled";
-import Add from "~icons/fluent/add-48-filled";
+import { IconAdd, IconFilter } from "~/assets/icons";
 
 type Gender = "male" | "female";
 type TeamStatus = "enabled" | "disabled" | "all";
@@ -64,16 +63,19 @@ function goToPage(page: number) {
         <div class="d-flex align-items-center mb-4">
             <h2 class="h2 fw-light m-0">Equipos</h2>
             <NuxtLink
-                class="btn-solid btn-styled theme-accent ms-auto"
-                :to="{ name: 'home-sport-teams-new' }"
+                class="btn-solid rounded-pill ms-auto"
+                :to="{
+                    name: 'home-sport-teams-new',
+                    params: { sport: route.params.sport },
+                }"
                 aria-label="Agregar nuevo"
             >
-                <Add />
+                <IconAdd />
                 Nuevo
             </NuxtLink>
         </div>
 
-        <form class="mb-3 search d-flex" action="#" @submit.prevent>
+        <form class="mb-3 search" action="#" @submit.prevent>
             <div class="hstack gap-2" role="search">
                 <button
                     class="btn-solid btn-styled btn-icon theme-primary"
@@ -82,7 +84,7 @@ function goToPage(page: number) {
                     data-bs-target="#more-filters"
                     aria-label="Expandir filtros"
                 >
-                    <Filter />
+                    <IconFilter />
                 </button>
                 <input
                     class="form-control"
@@ -96,7 +98,7 @@ function goToPage(page: number) {
             <dialog id="more-filters" class="dialog">
                 <div class="dialog-header">
                     <h1 class="dialog-title">
-                        <Filter class="me-2" />
+                        <IconFilter class="me-2" />
                         Filtros
                     </h1>
                     <button
@@ -175,7 +177,7 @@ function goToPage(page: number) {
                 :key="team.id"
                 :to="{
                     name: 'home-sport-teams-id',
-                    params: { id: team.id },
+                    params: { sport: route.params.sport, id: team.id },
                 }"
             >
                 <div class="card-body">

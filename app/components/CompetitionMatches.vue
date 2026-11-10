@@ -5,7 +5,7 @@ import {
     type MatchResponse,
 } from "~/utils/openapi";
 
-import Shuffle from "~icons/fluent/arrow-shuffle-48-filled";
+import { IconEdit, IconShuffle } from "~/assets/icons";
 
 const { $api } = useNuxtApp();
 
@@ -81,7 +81,7 @@ const matchesByRound = computed(() => {
                 :disabled="!randomizeEnabled"
                 @click="randomizeMatches"
             >
-                <Shuffle />
+                <IconShuffle />
                 <span>Sorteo</span>
             </button>
         </div>
@@ -104,46 +104,77 @@ const matchesByRound = computed(() => {
                     <h3 class="h6 mb-0">Fecha {{ round }}</h3>
                 </div>
 
-                <div class="card-body vstack gap-3">
-                    <div
-                        class="vstack gap-2"
-                        v-for="(match, index) in roundMatches"
-                        :key="match.id"
-                    >
-                        <NuxtLink
-                            class="match text-decoration-none"
-                            :to="{
-                                name: 'home-sport-competitions-id-matches-matchId',
-                                params: {
-                                    id: competition.id,
-                                    matchId: match.id,
-                                },
-                            }"
+                <div class="card-body vstack p-0">
+                    <ul class="list-group list-group-flush">
+                        <li
+                            class="list-group-item bg-transparent p-0"
+                            v-for="(match, index) in roundMatches"
+                            :key="match.id"
                         >
-                            <p class="fw-semibold mb-1">
-                                {{ match.team_1.name }} vs.
-                                {{ match.team_2.name }}
-                            </p>
                             <div
-                                class="d-flex flex-wrap align-items-center gap-2"
+                                class="d-flex flex-column md:flex-row flex-wrap p-4 px-5"
                             >
-                                <span
-                                    class="badge badge-subtle"
-                                    :class="matchStatusTheme(match.status)"
+                                <div class="div">
+                                    <p class="fw-semibold mb-1">
+                                        {{ match.team_1.name }} vs.
+                                        {{ match.team_2.name }}
+                                    </p>
+                                    <div
+                                        class="d-flex flex-wrap align-items-center gap-2"
+                                    >
+                                        <span
+                                            class="badge badge-subtle"
+                                            :class="
+                                                matchStatusTheme(match.status)
+                                            "
+                                        >
+                                            {{ matchStatusLabel(match.status) }}
+                                        </span>
+                                        <span class="fg-2 small">
+                                            Árbitro: {{ match.referee.name }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div
+                                    class="align-self-end align-items-end text-end justify-content-end hstack gap-4"
                                 >
-                                    {{ matchStatusLabel(match.status) }}
-                                </span>
-                                <span class="fg-2 small">
-                                    Árbitro: {{ match.referee.name }}
-                                </span>
+                                    <div
+                                        class="fg-2 small"
+                                        v-if="match.starts_at && match.ends_at"
+                                    >
+                                        <div>
+                                            {{
+                                                formatDateTime(match.starts_at)
+                                            }}
+                                        </div>
+                                        <div>
+                                            Dura
+                                            {{
+                                                formatTimeDelta(
+                                                    match.starts_at,
+                                                    match.ends_at,
+                                                )
+                                            }}
+                                        </div>
+                                    </div>
+                                    <NuxtLink
+                                        class="btn-solid btn-icon"
+                                        type="button"
+                                        :to="{
+                                            name: 'home-sport-competitions-id-matches-matchId',
+                                            params: {
+                                                sport: competition.sport.id,
+                                                id: competition.id,
+                                                matchId: match.id,
+                                            },
+                                        }"
+                                    >
+                                        <IconEdit />
+                                    </NuxtLink>
+                                </div>
                             </div>
-                        </NuxtLink>
-
-                        <hr
-                            class="my-1"
-                            v-if="index < roundMatches.length - 1"
-                        />
-                    </div>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>

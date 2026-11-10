@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import type { TeamEnvelope, TeamUpdateRequest } from "~/utils/openapi";
 
-import ArrowLeft from "~icons/fluent/arrow-left-24-filled";
-import Subtract from "~icons/fluent/subtract-circle-48-filled";
-import Checkmark from "~icons/fluent/checkmark-circle-48-filled";
+import {
+    IconArrowLeft,
+    IconCheckmarkCircle,
+    IconSubtract,
+} from "~/assets/icons";
 
 const route = useRoute();
 const { $api } = useNuxtApp();
@@ -84,9 +86,12 @@ async function setTeamEnabled(enabled: boolean) {
 <template>
     <NuxtLink
         class="d-flex align-items-center gap-1 text-decoration-none mb-3"
-        :to="{ name: 'home-sport-teams' }"
+        :to="{
+            name: 'home-sport-teams',
+            params: { sport: route.params.sport },
+        }"
     >
-        <ArrowLeft />
+        <IconArrowLeft />
         <span>Volver a Equipos</span>
     </NuxtLink>
 
@@ -137,7 +142,7 @@ async function setTeamEnabled(enabled: boolean) {
                     v-if="team.is_enabled"
                     @click="setTeamEnabled(false)"
                 >
-                    <Subtract />
+                    <IconSubtract />
                     <span>Deshabilitar</span>
                 </button>
 
@@ -147,7 +152,7 @@ async function setTeamEnabled(enabled: boolean) {
                     v-else
                     @click="setTeamEnabled(true)"
                 >
-                    <Checkmark />
+                    <IconCheckmarkCircle />
                     <span>Habilitar</span>
                 </button>
 

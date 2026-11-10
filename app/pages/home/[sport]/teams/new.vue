@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { TeamCreateRequest, TeamEnvelope } from "~/utils/openapi";
 
-import ArrowLeft from "~icons/fluent/arrow-left-24-filled";
+import { IconArrowLeft } from "~/assets/icons";
 
 const { $api } = useNuxtApp();
 
@@ -59,9 +59,12 @@ async function addTeam(ev: SubmitEvent) {
 
         <NuxtLink
             class="d-flex align-items-center gap-1 text-decoration-none mb-3"
-            :to="{ name: 'home-sport-teams' }"
+            :to="{
+                name: 'home-sport-teams',
+                params: { sport: route.params.sport },
+            }"
         >
-            <ArrowLeft />
+            <IconArrowLeft />
             <span>Volver al listado</span>
         </NuxtLink>
         <h1 class="h2 fw-light m-0">Nuevo equipo</h1>
@@ -93,12 +96,12 @@ async function addTeam(ev: SubmitEvent) {
             </div>
 
             <div class="d-flex align-items-center gap-2">
-                <a
+                <NuxtLink
                     class="btn-outline theme-secondary"
-                    :href="`/home/${sportId}/teams`"
+                    :to="`/home/${sportId}/teams`"
                 >
                     Cancelar
-                </a>
+                </NuxtLink>
                 <button
                     class="btn-solid theme-primary ms-auto"
                     :disabled="saving"

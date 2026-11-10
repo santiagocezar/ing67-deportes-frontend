@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import type { AuthMeResponse } from "~/utils/openapi";
-import ArrowExit from "~icons/fluent/arrow-exit-48-filled";
-
-import Settings from "~icons/fluent/settings-48-regular";
+import type { AuthMeResponse, SportListResponse } from "~/utils/openapi";
+import { IconArrowExit, IconChevronUpDown, IconSettings } from "~/assets/icons";
 
 interface Props {
     title?: string;
@@ -10,7 +8,10 @@ interface Props {
 
 const { title } = defineProps<Props>();
 
+const route = useRoute();
+
 const auth = useAuth();
+const { data: sports } = await useAPI<SportListResponse>("/sports");
 const { data: me, refresh: refreshMe } = await useAPI<AuthMeResponse>(
     "/auth/me",
     {
@@ -27,7 +28,35 @@ watch(
 <template>
     <header class="navbar border-bottom flex-shrink-0">
         <div class="container px-4">
-            <h1 class="h4 m-0 fg-body fw-bold">{{ title }}</h1>
+            <button
+                class="btn-solid fg-body"
+                type="button"
+                data-bs-toggle="menu"
+                aria-expanded="false"
+            >
+                <span class="fw-bold">
+                    {{
+                        sports?.sports.find((s) => s.id == route.params.sport)
+                            ?.name ?? "Deportes"
+                    }}
+                </span>
+                <IconChevronUpDown />
+            </button>
+            <div class="menu">
+                <NuxtLink
+                    v-for="sport in sports?.sports"
+                    :key="sport.id"
+                    class="menu-item"
+                    :class="{ active: sport.id == route.params.sport }"
+                    :to="{ name: 'home-sport', params: { sport: sport.id } }"
+                >
+                    {{ sport.name }}
+                </NuxtLink>
+                <hr class="menu-divider" />
+                <NuxtLink class="menu-item" to="/sports">
+                    <IconSettings /> Gestionar deportes
+                </NuxtLink>
+            </div>
             <div class="d-flex gap-4">
                 <slot></slot>
                 <button
@@ -42,25 +71,25 @@ watch(
                     }}</span>
                 </button>
                 <div v-if="me" class="menu">
-                    <a href="/settings" class="menu-item">
-                        <Settings />
+                    <NuxtLink to="#" class="menu-item">
+                        <IconSettings />
                         Gestión
-                    </a>
+                    </NuxtLink>
                     <hr class="menu-divider" />
                     <div class="menu-text">{{ me?.user.name }}</div>
                     <button class="menu-item fg-danger" @click="auth.logout()">
-                        <ArrowExit />
+                        <IconArrowExit />
                         Cerrar sesión
                     </button>
                 </div>
 
-                <a
+                <NuxtLink
                     v-else
                     class="btn-solid btn-styled theme-primary"
-                    href="/login"
+                    to="/login"
                 >
                     Iniciar sesión
-                </a>
+                </NuxtLink>
             </div>
         </div>
     </header>

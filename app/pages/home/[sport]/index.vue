@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { type CompetitionListResponse } from "~/utils/openapi";
 
-import Filter from "~icons/fluent/filter-32-filled";
-import Add from "~icons/fluent/add-48-filled";
+import { IconAdd, IconFilter } from "~/assets/icons";
 
 type Competition = CompetitionListResponse["competitions"][number];
 type CompetitionStatus = NonNullable<Competition["status"]>;
@@ -80,15 +79,18 @@ function goToPage(page: number) {
             <h2 class="h2 fw-light m-0">Competencias</h2>
             <NuxtLink
                 class="btn-solid rounded-pill ms-auto"
-                :to="{ name: 'home-sport-competitions-new' }"
+                :to="{
+                    name: 'home-sport-competitions-new',
+                    params: { sport: route.params.sport },
+                }"
                 aria-label="Agregar nuevo"
             >
-                <Add />
-                Nueva
+                <IconAdd />
+                Nuevo
             </NuxtLink>
         </div>
 
-        <form class="mb-3 search d-flex" action="#" @submit.prevent>
+        <form class="mb-3 search" action="#" @submit.prevent>
             <div class="hstack gap-2" role="search">
                 <button
                     class="btn-solid btn-styled btn-icon theme-primary"
@@ -97,7 +99,7 @@ function goToPage(page: number) {
                     data-bs-target="#more-filters"
                     aria-label="Expandir filtros"
                 >
-                    <Filter />
+                    <IconFilter />
                 </button>
                 <input
                     class="form-control"
@@ -111,7 +113,7 @@ function goToPage(page: number) {
             <dialog id="more-filters" class="dialog">
                 <div class="dialog-header">
                     <h1 class="dialog-title">
-                        <Filter class="me-2" />
+                        <IconFilter class="me-2" />
                         Filtros
                     </h1>
                     <button
@@ -209,7 +211,7 @@ function goToPage(page: number) {
                 v-for="competition in data.competitions"
                 :to="{
                     name: 'home-sport-competitions-id',
-                    params: { id: competition.id },
+                    params: { sport: route.params.sport, id: competition.id },
                 }"
                 :key="competition.id"
             >

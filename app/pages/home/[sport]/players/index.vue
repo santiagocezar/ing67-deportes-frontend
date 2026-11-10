@@ -5,8 +5,7 @@ import {
     type TeamListResponse,
 } from "~/utils/openapi";
 
-import Filter from "~icons/fluent/filter-32-filled";
-import Add from "~icons/fluent/add-48-filled";
+import { IconAdd, IconFilter } from "~/assets/icons";
 
 type PlayerStatus = "enabled" | "disabled" | "all";
 type PlayerSort = "name_asc" | "created_at_desc";
@@ -62,8 +61,6 @@ const { data: filterTeamsData } = await useAPI<TeamListResponse>("/teams", {
     query: filterTeamsQuery,
 });
 
-const message = ref("");
-
 function genderLabel(gender: Player["gender"]) {
     return gender === "male" ? "Masculino" : "Femenino";
 }
@@ -100,18 +97,19 @@ function goToPage(page: number) {
         <div class="d-flex align-items-center mb-4">
             <h2 class="h2 fw-light m-0">Jugadores</h2>
             <NuxtLink
-                class="btn-solid btn-styled theme-accent ms-auto"
-                :to="{ name: 'home-sport-players-new' }"
+                class="btn-solid rounded-pill ms-auto"
+                :to="{
+                    name: 'home-sport-players-new',
+                    params: { sport: route.params.sport },
+                }"
                 aria-label="Agregar nuevo"
             >
-                <Add />
+                <IconAdd />
                 Nuevo
             </NuxtLink>
         </div>
 
-        <p class="notification is-danger" v-if="message">{{ message }}</p>
-
-        <form class="mb-3 search is-flex" action="#" @submit.prevent>
+        <form class="mb-3 search" action="#" @submit.prevent>
             <div class="hstack gap-2" role="search">
                 <button
                     class="btn-solid btn-styled btn-icon theme-primary"
@@ -120,7 +118,7 @@ function goToPage(page: number) {
                     data-bs-target="#more-filters"
                     aria-label="Expandir filtros"
                 >
-                    <Filter />
+                    <IconFilter />
                 </button>
                 <input
                     class="form-control"
@@ -134,7 +132,7 @@ function goToPage(page: number) {
             <dialog id="more-filters" class="dialog">
                 <div class="dialog-header">
                     <h1 class="dialog-title">
-                        <Filter class="me-2" />
+                        <IconFilter class="me-2" />
                         Filtros
                     </h1>
                     <button
@@ -231,7 +229,7 @@ function goToPage(page: number) {
                 v-for="player in data.players"
                 :to="{
                     name: 'home-sport-players-id',
-                    params: { id: player.id },
+                    params: { sport: route.params.sport, id: player.id },
                 }"
                 :key="player.id"
             >
@@ -332,28 +330,6 @@ function goToPage(page: number) {
 
     .control {
         flex-grow: 1;
-    }
-}
-
-#more-filters {
-    &:popover-open {
-        display: grid;
-    }
-
-    grid-template-columns: auto 1fr;
-    gap: 0.5rem;
-
-    & .label {
-        text-align: right;
-        margin: 0;
-    }
-
-    & .field {
-        display: grid;
-        grid-column: span 2;
-        grid-template-columns: subgrid;
-        justify-items: stretch;
-        align-items: center;
     }
 }
 
