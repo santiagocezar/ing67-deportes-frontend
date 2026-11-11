@@ -3,6 +3,7 @@ import {
     type TeamsListResponse,
     type PlayerResponse as Player,
     type PlayerPhotoListResponse,
+    type PlayerSanctionListResponse,
 } from "~/utils/openapi";
 
 import {
@@ -11,6 +12,7 @@ import {
     IconSubtract,
 } from "~/assets/icons";
 import Gallery from "~/components/Gallery.vue";
+import SanctionHistory from "~/components/SanctionHistory.vue";
 
 const route = useRoute();
 
@@ -29,6 +31,23 @@ const { data: photos, refresh: refreshPhotos } =
     await useAPI<PlayerPhotoListResponse>(
         () => `/players/${route.params.id}/photos`,
     );
+
+const { data: activeSanctions, refresh: refreshActiveSanctions } =
+    await useAPI<PlayerSanctionListResponse>(
+        () => `/players/${route.params.id}/sanctions`,
+        { query: { status: "active" } },
+    );
+
+const hasActiveSanction = computed(
+    () => (activeSanctions.value?.sanctions.length ?? 0) > 0,
+);
+
+const activeRemainingMatches = computed(() =>
+    (activeSanctions.value?.sanctions ?? []).reduce(
+        (total, sanction) => total + sanction.remaining_matches,
+        0,
+    ),
+);
 
 const currentPhotos = computed(() =>
     (photos.value?.photos ?? []).map(
@@ -168,6 +187,12 @@ async function addPhoto(file: File) {
         <div class="d-flex flex-wrap align-items-start gap-2">
             <h1 class="h2 fw-light m-0 flex-grow-1">{{ editing.name }}</h1>
             <span
+                v-if="hasActiveSanction"
+                class="badge badge-subtle theme-danger"
+            >
+                Sancionado
+            </span>
+            <span
                 class="badge badge-subtle"
                 :class="editing.is_enabled ? 'theme-success' : 'theme-danger'"
             >
@@ -193,6 +218,17 @@ async function addPhoto(file: File) {
                 <span class="form-label"
                     >Selección de equipos (máx. {{ MAX_PLAYER_TEAMS }})</span
                 >
+                <div
+                    v-if="hasActiveSanction"
+                    class="alert theme-warning"
+                    role="status"
+                >
+                    Sanción activa: no puede incorporarse a nuevos equipos hasta
+                    cumplir
+                    {{ activeRemainingMatches }}
+                    {{ activeRemainingMatches === 1 ? "fecha" : "fechas" }}.
+                    Puede quitarse de sus equipos actuales.
+                </div>
                 <div v-if="!editTeamsData?.teams.length" class="form-text mb-0">
                     No hay equipos habilitados para esa combinación.
                 </div>
@@ -210,7 +246,8 @@ async function addPhoto(file: File) {
                                 :checked="team_ids.includes(team.id)"
                                 :disabled="
                                     !team_ids.includes(team.id) &&
-                                    team_ids.length >= MAX_PLAYER_TEAMS
+                                    (team_ids.length >= MAX_PLAYER_TEAMS ||
+                                        hasActiveSanction)
                                 "
                                 @change="toggleTeam(team.id)"
                             />
@@ -263,6 +300,13 @@ async function addPhoto(file: File) {
             editing
             @add="addPhoto"
             @delete="deletePhoto"
+        />
+
+        <hr />
+
+        <SanctionHistory
+            :player-id="editing.id"
+            @changed="refreshActiveSanctions"
         />
     </template>
 

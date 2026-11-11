@@ -1,12 +1,18 @@
 <script setup lang="ts">
 import {
+    type AuthMeResponse,
     type MatchManualReviewStatusResponse,
     type MatchResponse,
     type MatchRosterScanManualReviewListResponse,
+    type PlayerSanctionCreateRequest,
+    type PlayerSanctionListResponse,
+    type PlayerSanctionResponse,
+    type RosterPlayerResponse,
 } from "~/utils/openapi";
 
 import { IconArrowLeft, IconSave, IconScanPerson } from "~/assets/icons";
 import ScanCard from "~/components/ScanCard.vue";
+import SanctionForm from "~/components/SanctionForm.vue";
 
 const route = useRoute();
 const { $api } = useNuxtApp();
@@ -21,6 +27,10 @@ const {
     error,
     refresh,
 } = await useAPI<MatchResponse>(() => `/matches/${route.params.matchId}`);
+
+const { data: me } = await useAPI<AuthMeResponse>("/auth/me", {
+    onResponseError: () => {}, // evitar redirigir
+});
 
 const { data: manualReviewStatus, refresh: refreshManualReviewStatus } =
     await useAPI<MatchManualReviewStatusResponse>(
@@ -58,6 +68,96 @@ const scanTarget = ref<MatchResponse["team_1"] | null>(null);
 const scanTeams = computed(() =>
     match.value ? [match.value.team_1, match.value.team_2] : [],
 );
+
+// El administrador puede sancionar desde cualquier partido en curso. El árbitro
+// solo desde un partido en curso al que esté asignado.
+const canCreateSanction = computed(() => {
+    const currentMatch = match.value;
+    const user = me.value?.user;
+    if (!currentMatch || !user) return false;
+    if (currentMatch.status !== "in_progress") return false;
+
+    return (
+        user.role === "administrator" ||
+        (user.role === "referee" && user.id === currentMatch.referee.id)
+    );
+});
+
+const sanctionTarget = ref<RosterPlayerResponse | null>(null);
+const sanctionFormKey = ref(0);
+const sanctionSaving = ref(false);
+const sanctionMessage = ref("");
+const sanctionError = ref("");
+const targetSanctions = ref<PlayerSanctionResponse[]>([]);
+const targetSanctionsLoading = ref(false);
+
+const { forget: forgetActiveSanction } = useActiveSanctions();
+
+let sanctionRequestId = 0;
+
+function sanctionErrorMessage(error: unknown) {
+    const body = (error as { data?: { error?: { message?: string } } }).data;
+    return body?.error?.message ?? "Ocurrió un error inesperado.";
+}
+
+async function loadTargetSanctions(playerId: number) {
+    targetSanctionsLoading.value = true;
+    const requestId = ++sanctionRequestId;
+
+    try {
+        const response = await $api<PlayerSanctionListResponse>(
+            `/players/${playerId}/sanctions`,
+            { query: { status: "active", page: 1 } },
+        );
+        if (requestId !== sanctionRequestId) return;
+        targetSanctions.value = response.sanctions;
+    } catch {
+        if (requestId !== sanctionRequestId) return;
+        targetSanctions.value = [];
+    } finally {
+        if (requestId === sanctionRequestId) {
+            targetSanctionsLoading.value = false;
+        }
+    }
+}
+
+function openSanctionDialog(player: RosterPlayerResponse) {
+    sanctionTarget.value = player;
+    sanctionFormKey.value += 1;
+    sanctionMessage.value = "";
+    sanctionError.value = "";
+    targetSanctions.value = [];
+    loadTargetSanctions(player.id);
+}
+
+async function createSanction(body: PlayerSanctionCreateRequest) {
+    if (!match.value || !sanctionTarget.value) return;
+
+    const player = sanctionTarget.value;
+    sanctionSaving.value = true;
+    sanctionError.value = "";
+    sanctionMessage.value = "";
+
+    try {
+        await $api(
+            `/matches/${match.value.id}/players/${player.id}/sanctions`,
+            {
+                method: "POST",
+                body,
+            },
+        );
+    } catch (error) {
+        sanctionError.value = sanctionErrorMessage(error);
+        sanctionSaving.value = false;
+        return;
+    }
+
+    sanctionSaving.value = false;
+    sanctionMessage.value = `Sanción registrada para ${player.name}.`;
+    sanctionFormKey.value += 1;
+    forgetActiveSanction(player.id);
+    await loadTargetSanctions(player.id);
+}
 
 function reportError(error: unknown) {
     const body = (error as { data?: { error?: { message?: string } } }).data;
@@ -271,6 +371,17 @@ async function saveMatch(ev: SubmitEvent) {
                                     >
                                         {{ player.name }}
                                     </NuxtLink>
+
+                                    <button
+                                        v-if="canCreateSanction"
+                                        class="btn-outline theme-danger btn-sm ms-auto"
+                                        type="button"
+                                        data-bs-toggle="dialog"
+                                        data-bs-target="#sanction-create-dialog"
+                                        @click="openSanctionDialog(player)"
+                                    >
+                                        Sancionar
+                                    </button>
                                 </li>
                             </ul>
                             <button
@@ -345,6 +456,76 @@ async function saveMatch(ev: SubmitEvent) {
                     />
                 </div>
             </dialog>
+
+            <dialog
+                id="sanction-create-dialog"
+                class="dialog dialog-scrollable"
+                @close="sanctionTarget = null"
+            >
+                <div class="dialog-header">
+                    <h2 class="dialog-title">Registrar sanción</h2>
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="dialog"
+                        aria-label="Cerrar"
+                    ></button>
+                </div>
+                <div class="dialog-body vstack gap-3">
+                    <p class="fg-2 small mb-0">
+                        Partido {{ match.team_1.name }} vs.
+                        {{ match.team_2.name }} · {{ match.competition.name }}
+                    </p>
+
+                    <div
+                        v-if="targetSanctionsLoading"
+                        class="d-flex align-items-center gap-2 fg-2 small"
+                    >
+                        <span
+                            class="spinner-border spinner-border-sm"
+                            aria-hidden="true"
+                        ></span>
+                        Buscando sanciones activas…
+                    </div>
+                    <div
+                        v-else-if="targetSanctions.length"
+                        class="alert theme-warning"
+                        role="status"
+                    >
+                        <strong>{{ sanctionTarget?.name }}</strong> ya tiene
+                        {{ targetSanctions.length }}
+                        {{
+                            targetSanctions.length === 1
+                                ? "sanción activa"
+                                : "sanciones activas"
+                        }}. Las sanciones se cumplen una detrás de otra.
+                    </div>
+
+                    <div
+                        v-if="sanctionMessage"
+                        class="alert theme-success"
+                        role="status"
+                    >
+                        {{ sanctionMessage }}
+                    </div>
+                    <div
+                        v-if="sanctionError"
+                        class="alert theme-danger"
+                        role="alert"
+                    >
+                        {{ sanctionError }}
+                    </div>
+
+                    <SanctionForm
+                        v-if="sanctionTarget"
+                        :key="sanctionFormKey"
+                        :player-name="sanctionTarget.name"
+                        :saving="sanctionSaving"
+                        submit-label="Guardar sanción"
+                        @submit="createSanction"
+                    />
+                </div>
+            </dialog>
         </template>
     </div>
 </template>
@@ -352,5 +533,9 @@ async function saveMatch(ev: SubmitEvent) {
 <style scoped>
 #roster-scan-dialog {
     --bs-dialog-width: 42rem;
+}
+
+#sanction-create-dialog {
+    --bs-dialog-width: 36rem;
 }
 </style>

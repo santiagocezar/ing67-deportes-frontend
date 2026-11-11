@@ -17,6 +17,12 @@ const emit = defineEmits<{
 
 const { $api } = useNuxtApp();
 
+const {
+    load: loadActiveSanctions,
+    isSanctioned,
+    remainingMatches,
+} = useActiveSanctions();
+
 const selection = defineModel<Record<number, number[]>>({ required: true });
 
 const players = reactive<Record<number, RosterPlayerResponse[]>>({});
@@ -74,6 +80,7 @@ async function loadPlayers(teamId: number) {
             query: { team_id: teamId, status: "enabled", sort: "name_asc" },
         });
         players[teamId] = response.players;
+        loadActiveSanctions(response.players.map((player) => player.id));
     } catch (error) {
         emit("error", error);
     } finally {
@@ -145,11 +152,27 @@ function onToggle(teamId: number, ev: Event) {
                                 type="checkbox"
                                 :id="playerInputId(team.id, player.id)"
                                 :checked="isSelected(team.id, player.id)"
-                                :disabled="isPlayerDisabled(team.id)"
+                                :disabled="
+                                    isPlayerDisabled(team.id) ||
+                                    (!isSelected(team.id, player.id) &&
+                                        isSanctioned(player.id))
+                                "
                                 @change="togglePlayer(team.id, player.id)"
                             />
                             <label :for="playerInputId(team.id, player.id)">
                                 {{ player.name }}
+                                <span
+                                    v-if="isSanctioned(player.id)"
+                                    class="badge badge-subtle theme-danger ms-1"
+                                >
+                                    Sancionado ·
+                                    {{ remainingMatches(player.id) }}
+                                    {{
+                                        remainingMatches(player.id) === 1
+                                            ? "fecha"
+                                            : "fechas"
+                                    }}
+                                </span>
                             </label>
                         </div>
                     </div>
