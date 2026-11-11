@@ -9,6 +9,8 @@ type TeamSort = "name_asc" | "created_at_desc";
 
 const route = useRoute();
 
+const { isAdministrator } = useCurrentUser();
+
 const filters = reactive({
     search: "",
     gender_category: "" as Gender | "",
@@ -63,6 +65,7 @@ function goToPage(page: number) {
         <div class="d-flex align-items-center mb-4">
             <h2 class="h2 fw-light m-0">Equipos</h2>
             <NuxtLink
+                v-if="isAdministrator"
                 class="btn-solid rounded-pill ms-auto"
                 :to="{
                     name: 'home-sport-teams-new',

@@ -22,7 +22,7 @@ const {
 );
 
 const { me, isAdministrator, canEdit, canAnnull, isDurationLocked } =
-    await useSanctionPermissions();
+    useSanctionPermissions();
 
 const { forget: forgetActiveSanction } = useActiveSanctions();
 
@@ -167,7 +167,7 @@ async function annulSanction() {
             <div class="d-flex flex-wrap align-items-start gap-2 mb-2">
                 <div class="flex-grow-1">
                     <h1 class="h2 fw-light mb-1">{{ sanction.title }}</h1>
-                    <p class="fg-2 mb-0"></p>
+                    <p class="mb-0">{{ sanction.reason }}</p>
                 </div>
                 <span
                     class="badge badge-subtle"
@@ -249,18 +249,20 @@ async function annulSanction() {
                                     v-for="(team, i) in sanction.frozen_teams"
                                 >
                                     <span v-if="i !== 0">, </span>
-
+                                    <!-- El catálogo de equipos es solo para administradores -->
                                     <NuxtLink
+                                        v-if="isAdministrator"
                                         :to="{
                                             name: 'home-sport-teams-id',
                                             params: {
                                                 sport: route.params.sport,
-                                                id: sanction.player.id,
+                                                id: team.id,
                                             },
                                         }"
                                     >
                                         {{ team.name }}
                                     </NuxtLink>
+                                    <span v-else>{{ team.name }}</span>
                                 </template>
                             </dd>
                         </template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AuthMeResponse, SportListResponse } from "~/utils/openapi";
+import type { SportListResponse } from "~/utils/openapi";
 import { IconArrowExit, IconChevronUpDown, IconSettings } from "~/assets/icons";
 
 interface Props {
@@ -12,16 +12,11 @@ const route = useRoute();
 
 const auth = useAuth();
 const { data: sports } = await useAPI<SportListResponse>("/sports");
-const { data: me, refresh: refreshMe } = await useAPI<AuthMeResponse>(
-    "/auth/me",
-    {
-        onResponseError: () => {}, // evitar redirigir
-    },
-);
+const { me, isAdministrator } = useCurrentUser();
 
 watch(
     () => auth.token,
-    () => refreshMe(),
+    () => refreshCurrentUser(),
 );
 </script>
 
@@ -52,10 +47,12 @@ watch(
                 >
                     {{ sport.name }}
                 </NuxtLink>
-                <hr class="menu-divider" />
-                <NuxtLink class="menu-item" to="/sports">
-                    <IconSettings /> Gestionar deportes
-                </NuxtLink>
+                <template v-if="isAdministrator">
+                    <hr class="menu-divider" />
+                    <NuxtLink class="menu-item" to="/sports">
+                        <IconSettings /> Gestionar deportes
+                    </NuxtLink>
+                </template>
             </div>
             <div class="d-flex gap-4">
                 <slot></slot>
@@ -71,11 +68,13 @@ watch(
                     }}</span>
                 </button>
                 <div v-if="me" class="menu">
+                    <!--
                     <NuxtLink to="#" class="menu-item">
                         <IconSettings />
                         Gestión
                     </NuxtLink>
                     <hr class="menu-divider" />
+					-->
                     <div class="menu-text">{{ me?.user.name }}</div>
                     <button class="menu-item fg-danger" @click="auth.logout()">
                         <IconArrowExit />

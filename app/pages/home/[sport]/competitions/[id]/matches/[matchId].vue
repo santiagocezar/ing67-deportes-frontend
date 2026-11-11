@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import {
-    type AuthMeResponse,
     type MatchManualReviewStatusResponse,
     type MatchResponse,
     type MatchRosterScanManualReviewListResponse,
@@ -13,6 +12,7 @@ import {
 import { IconArrowLeft, IconSave, IconScanPerson } from "~/assets/icons";
 import ScanCard from "~/components/ScanCard.vue";
 import SanctionForm from "~/components/SanctionForm.vue";
+import { ADMIN_ROLE, REFEREE_ROLE } from "~/utils/roles";
 
 const route = useRoute();
 const { $api } = useNuxtApp();
@@ -28,9 +28,9 @@ const {
     refresh,
 } = await useAPI<MatchResponse>(() => `/matches/${route.params.matchId}`);
 
-const { data: me } = await useAPI<AuthMeResponse>("/auth/me", {
-    onResponseError: () => {}, // evitar redirigir
-});
+const { me, isAdministrator } = useCurrentUser();
+
+const readonly = computed(() => !isAdministrator.value);
 
 const { data: manualReviewStatus, refresh: refreshManualReviewStatus } =
     await useAPI<MatchManualReviewStatusResponse>(
@@ -78,8 +78,8 @@ const canCreateSanction = computed(() => {
     if (currentMatch.status !== "in_progress") return false;
 
     return (
-        user.role === "administrator" ||
-        (user.role === "referee" && user.id === currentMatch.referee.id)
+        user.role === ADMIN_ROLE ||
+        (user.role === REFEREE_ROLE && user.id === currentMatch.referee.id)
     );
 });
 
@@ -207,7 +207,7 @@ function openTeamScan(team: MatchResponse["team_1"]) {
 
 async function saveMatch(ev: SubmitEvent) {
     ev.preventDefault();
-    if (!match.value) return;
+    if (!match.value || readonly.value) return;
 
     message.value = "";
 
@@ -293,6 +293,7 @@ async function saveMatch(ev: SubmitEvent) {
                             :id="`match-${match.id}-starts-at`"
                             v-model="edited.starts_at"
                             type="datetime-local"
+                            :disabled="readonly"
                         />
                     </div>
                 </div>
@@ -309,13 +310,14 @@ async function saveMatch(ev: SubmitEvent) {
                             :id="`match-${match.id}-ends-at`"
                             v-model="edited.ends_at"
                             type="datetime-local"
+                            :disabled="readonly"
                         />
                     </div>
                 </div>
                 <div class="alert theme-danger" role="alert" v-if="message">
                     {{ message }}
                 </div>
-                <div class="d-flex justify-content-end">
+                <div v-if="!readonly" class="d-flex justify-content-end">
                     <button class="btn-solid theme-primary" type="submit">
                         <IconSave />
                         <span>Guardar horario</span>

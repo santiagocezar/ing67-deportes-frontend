@@ -11,6 +11,8 @@ type Gender = Competition["gender"];
 
 const route = useRoute();
 
+const { isAdministrator } = useCurrentUser();
+
 const { data: data, refresh } = await useAPI<Competition>(
     () => `/competitions/${route.params.id}`,
 );
@@ -119,7 +121,10 @@ function statusTheme(status: CompetitionStatus) {
                 aria-labelledby="matches-tab"
                 tabindex="0"
             >
-                <CompetitionMatches :editing="data" />
+                <CompetitionMatches
+                    :editing="data"
+                    :readonly="!isAdministrator"
+                />
             </div>
             <div
                 class="tab-pane"
@@ -128,7 +133,11 @@ function statusTheme(status: CompetitionStatus) {
                 aria-labelledby="teams-tab"
                 tabindex="0"
             >
-                <CompetitionTeams :editing="data" @refresh="refresh()" />
+                <CompetitionTeams
+                    :editing="data"
+                    :readonly="!isAdministrator"
+                    @refresh="refresh()"
+                />
             </div>
             <div
                 class="tab-pane"
@@ -137,7 +146,11 @@ function statusTheme(status: CompetitionStatus) {
                 aria-labelledby="details-tab"
                 tabindex="0"
             >
-                <CompetitionDetails :editing="data" @refresh="refresh()" />
+                <CompetitionDetails
+                    :editing="data"
+                    :readonly="!isAdministrator"
+                    @refresh="refresh()"
+                />
             </div>
         </div>
     </div>

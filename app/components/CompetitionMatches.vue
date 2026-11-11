@@ -9,8 +9,9 @@ import { IconEdit, IconShuffle } from "~/assets/icons";
 
 const { $api } = useNuxtApp();
 
-const { editing: competition } = defineProps<{
+const { editing: competition, readonly } = defineProps<{
     editing: CompetitionDetailResponse;
+    readonly?: boolean;
 }>();
 
 const { data: matches, refresh: refreshMatches } =
@@ -48,6 +49,8 @@ const randomizeEnabled = computed(() =>
 );
 
 async function randomizeMatches() {
+    if (readonly) return;
+
     try {
         await $api(`/competitions/${competition.id}/matches/randomize`, {
             method: "POST",
@@ -76,6 +79,7 @@ const matchesByRound = computed(() => {
         <div class="d-flex align-items-center gap-2 mb-3">
             <h2 class="h5 mb-0">Partidos</h2>
             <button
+                v-if="!readonly"
                 class="btn-solid btn-styled theme-primary ms-auto"
                 type="button"
                 :disabled="!randomizeEnabled"

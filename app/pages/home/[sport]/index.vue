@@ -12,6 +12,8 @@ type Gender = Competition["gender"];
 
 const route = useRoute();
 
+const { isAdministrator } = useCurrentUser();
+
 const filters = reactive({
     search: "",
     gender: "" as Gender | "",
@@ -78,6 +80,7 @@ function goToPage(page: number) {
         <div class="d-flex align-items-center mb-4">
             <h2 class="h2 fw-light m-0">Competencias</h2>
             <NuxtLink
+                v-if="isAdministrator"
                 class="btn-solid rounded-pill ms-auto"
                 :to="{
                     name: 'home-sport-competitions-new',

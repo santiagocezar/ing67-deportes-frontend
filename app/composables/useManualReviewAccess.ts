@@ -1,9 +1,7 @@
 import type { Ref } from "vue";
-import type {
-    AuthMeResponse,
-    MatchResponse,
-    MatchRosterScanResponse,
-} from "~/utils/openapi";
+import type { MatchResponse, MatchRosterScanResponse } from "~/utils/openapi";
+
+import { REFEREE_ROLE } from "~/utils/roles";
 
 // Una revisión pendiente solo la puede resolver el árbitro asignado al partido
 // y únicamente con el partido en curso o finalizado.
@@ -11,15 +9,13 @@ export async function useManualReviewAccess(
     scan: Ref<MatchRosterScanResponse | null>,
     match: Ref<MatchResponse | null>,
 ) {
-    const { data: me } = await useAPI<AuthMeResponse>("/auth/me", {
-        onResponseError: () => {}, // evitar redirigir
-    });
+    const { me } = useCurrentUser();
 
     const review = computed(() => scan.value?.manual_review ?? null);
 
     const isAssignedReferee = computed(
         () =>
-            me.value?.user.role === "referee" &&
+            me.value?.user.role === REFEREE_ROLE &&
             me.value.user.id === match.value?.referee.id,
     );
 

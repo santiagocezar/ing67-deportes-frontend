@@ -6,7 +6,10 @@ const emit = defineEmits<{ refresh: [] }>();
 
 const { $api } = useNuxtApp();
 
-const { editing } = defineProps<{ editing: CompetitionDetailResponse }>();
+const { editing, readonly } = defineProps<{
+    editing: CompetitionDetailResponse;
+    readonly?: boolean;
+}>();
 
 const edited = reactive({
     name: "",
@@ -42,7 +45,7 @@ function formatDate(date: string) {
 
 async function saveCompetition(ev: SubmitEvent) {
     ev.preventDefault();
-    if (!editing) return;
+    if (!editing || readonly) return;
     message.value = "";
 
     try {
@@ -63,6 +66,7 @@ async function saveCompetition(ev: SubmitEvent) {
 }
 
 async function setCompetitionEnabled(enabled: boolean) {
+    if (readonly) return;
     message.value = "";
 
     try {
@@ -84,10 +88,14 @@ async function setCompetitionEnabled(enabled: boolean) {
         <div class="form-field">
             <label for="name" class="form-label">Nombre</label>
             <input
-                class="form-control"
+                :class="{
+                    'form-control': !readonly,
+                    'form-control-plaintext': readonly,
+                }"
                 id="name"
                 v-model="edited.name"
                 type="text"
+                :readonly="readonly"
                 required
             />
         </div>
@@ -96,20 +104,28 @@ async function setCompetitionEnabled(enabled: boolean) {
             <div class="md:col-6">
                 <div class="form-field">
                     <label for="starts_at" class="form-label"> Inicio </label>
-                    <DatePicker v-model="edited.starts_at" id="starts_at" />
+                    <DatePicker
+                        v-model="edited.starts_at"
+                        id="starts_at"
+                        :disabled="readonly"
+                    />
                 </div>
             </div>
             <div class="md:col-6">
                 <div class="form-field">
                     <label for="ends_at" class="form-label">Fin</label>
-                    <DatePicker v-model="edited.ends_at" id="ends_at" />
+                    <DatePicker
+                        v-model="edited.ends_at"
+                        id="ends_at"
+                        :disabled="readonly"
+                    />
                 </div>
             </div>
         </div>
         <div class="alert theme-danger" role="alert" v-if="message">
             {{ message }}
         </div>
-        <div class="d-flex flex-wrap align-items-center gap-2">
+        <div v-if="!readonly" class="d-flex flex-wrap align-items-center gap-2">
             <button
                 class="btn-outline theme-danger"
                 type="button"
@@ -130,13 +146,9 @@ async function setCompetitionEnabled(enabled: boolean) {
                 <span>Habilitar</span>
             </button>
 
-            <NuxtLink
-                class="btn-outline theme-secondary ms-auto"
-                to="/competitions"
-            >
-                Cancelar
-            </NuxtLink>
-            <button class="btn-solid theme-primary">Guardar cambios</button>
+            <button class="ms-auto btn-solid theme-primary">
+                Guardar cambios
+            </button>
         </div>
     </form>
 </template>

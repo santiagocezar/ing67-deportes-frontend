@@ -12,8 +12,12 @@ import {
 
 const route = useRoute();
 
+const { isAdministrator } = useCurrentUser();
+
 const sportId = computed(() => route.params.sport);
 
+// El catálogo de equipos es solo para administradores, así que para el resto
+// ni siquiera se ofrece el acceso desde la navegación.
 const routes = computed(() => [
     {
         icon: IconHome,
@@ -27,12 +31,16 @@ const routes = computed(() => [
         to: `/home/${sportId.value}/players`,
         label: "Jugadores",
     },
-    {
-        icon: IconShield,
-        iconActive: IconShieldActive,
-        to: `/home/${sportId.value}/teams`,
-        label: "Equipos",
-    },
+    ...(isAdministrator.value
+        ? [
+              {
+                  icon: IconShield,
+                  iconActive: IconShieldActive,
+                  to: `/home/${sportId.value}/teams`,
+                  label: "Equipos",
+              },
+          ]
+        : []),
     {
         icon: IconScanPersonRegular,
         iconActive: IconScanPersonActive,

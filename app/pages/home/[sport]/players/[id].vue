@@ -16,6 +16,10 @@ import SanctionHistory from "~/components/SanctionHistory.vue";
 
 const route = useRoute();
 
+const { isAdministrator } = useCurrentUser();
+
+const readonly = computed(() => !isAdministrator.value);
+
 const {
     public: { apiBase },
 } = useRuntimeConfig();
@@ -65,6 +69,8 @@ const { $api } = useNuxtApp();
 const MAX_PLAYER_TEAMS = 3;
 const MAX_PHOTOS = 3;
 
+// El catálogo de equipos solo lo puede consultar un administrador. Para el
+// resto, la selección se reemplaza por los equipos del propio registro.
 const { data: editTeamsData } = await useAPI<TeamsListResponse>("/teams", {
     query: computed(() => ({
         status: "enabled",
@@ -72,8 +78,14 @@ const { data: editTeamsData } = await useAPI<TeamsListResponse>("/teams", {
         sport_id: editing.value?.sport.id,
         gender_category: editing.value?.gender,
     })),
-    enabled: computed(() => editing.value !== null),
+    enabled: computed(() => editing.value !== null && isAdministrator.value),
 });
+
+const teamsLabel = computed(() =>
+    isAdministrator.value
+        ? `Selección de equipos (máx. ${MAX_PLAYER_TEAMS})`
+        : "Equipos",
+);
 
 function reportError(error: unknown) {
     const body = (error as { data?: { error?: { message?: string } } }).data;
@@ -90,7 +102,7 @@ const team_ids = computed(
 
 async function savePlayer(ev: SubmitEvent) {
     ev.preventDefault();
-    if (!editing.value) return;
+    if (!editing.value || readonly.value) return;
     message.value = "";
 
     try {
@@ -110,6 +122,7 @@ async function savePlayer(ev: SubmitEvent) {
 }
 
 async function setPlayerEnabled(enabled: boolean) {
+    if (readonly.value) return;
     message.value = "";
 
     try {
@@ -249,7 +262,7 @@ async function addPhoto(file: File) {
         </section>
 
         <form class="vstack gap-3" action="#" @submit="savePlayer">
-            <label class="form-field">
+            <label v-if="!readonly" class="form-field">
                 <span class="form-label">Nombre</span>
                 <input
                     class="form-control"
@@ -261,11 +274,9 @@ async function addPhoto(file: File) {
             </label>
 
             <div class="form-group">
-                <span class="form-label"
-                    >Selección de equipos (máx. {{ MAX_PLAYER_TEAMS }})</span
-                >
+                <span class="form-label">{{ teamsLabel }}</span>
                 <div
-                    v-if="hasActiveSanction"
+                    v-if="hasActiveSanction && !readonly"
                     class="alert theme-warning"
                     role="status"
                 >
@@ -275,42 +286,65 @@ async function addPhoto(file: File) {
                     {{ activeRemainingMatches === 1 ? "fecha" : "fechas" }}.
                     Puede quitarse de sus equipos actuales.
                 </div>
-                <div v-if="!editTeamsData?.teams.length" class="form-text mb-0">
-                    No hay equipos habilitados para esa combinación.
-                </div>
-                <ul v-else class="list-group">
-                    <li
-                        class="list-group-item"
-                        v-for="team in editTeamsData?.teams"
-                        :key="team.id"
+
+                <!-- Administrador: selección editable del catálogo -->
+                <template v-if="isAdministrator">
+                    <div
+                        v-if="!editTeamsData?.teams.length"
+                        class="form-text mb-0"
                     >
-                        <div class="form-field">
-                            <input
-                                class="check"
-                                type="checkbox"
-                                :id="`team-${team.id}`"
-                                :checked="team_ids.includes(team.id)"
-                                :disabled="
-                                    !team_ids.includes(team.id) &&
-                                    (team_ids.length >= MAX_PLAYER_TEAMS ||
-                                        hasActiveSanction)
-                                "
-                                @change="toggleTeam(team.id)"
-                            />
-                            <label
-                                class="stretched-link"
-                                :for="`team-${team.id}`"
-                            >
-                                {{ team.name }}
-                            </label>
-                        </div>
-                    </li>
-                </ul>
+                        No hay equipos habilitados para esa combinación.
+                    </div>
+                    <ul v-else class="list-group">
+                        <li
+                            class="list-group-item"
+                            v-for="team in editTeamsData?.teams"
+                            :key="team.id"
+                        >
+                            <div class="form-field">
+                                <input
+                                    class="check"
+                                    type="checkbox"
+                                    :id="`team-${team.id}`"
+                                    :checked="team_ids.includes(team.id)"
+                                    :disabled="
+                                        !team_ids.includes(team.id) &&
+                                        (team_ids.length >= MAX_PLAYER_TEAMS ||
+                                            hasActiveSanction)
+                                    "
+                                    @change="toggleTeam(team.id)"
+                                />
+                                <label
+                                    class="stretched-link"
+                                    :for="`team-${team.id}`"
+                                >
+                                    {{ team.name }}
+                                </label>
+                            </div>
+                        </li>
+                    </ul>
+                </template>
+
+                <!-- Resto de los usuarios: solo los equipos del registro -->
+                <template v-else>
+                    <div v-if="!editing.teams.length" class="form-text mb-0">
+                        Sin equipos asociados.
+                    </div>
+                    <ul v-else class="list-group">
+                        <li
+                            class="list-group-item"
+                            v-for="team in editing.teams"
+                            :key="team.id"
+                        >
+                            {{ team.name }}
+                        </li>
+                    </ul>
+                </template>
             </div>
             <div class="alert theme-danger" role="alert" v-if="message">
                 {{ message }}
             </div>
-            <div class="d-flex align-items-center gap-2">
+            <div v-if="!readonly" class="d-flex align-items-center gap-2">
                 <button
                     class="btn-outline theme-danger"
                     type="button"
@@ -343,6 +377,7 @@ async function addPhoto(file: File) {
             :currentPhotos
             :pendingPhotos
             :max="MAX_PHOTOS"
+            :readonly="readonly"
             editing
             @add="addPhoto"
             @delete="deletePhoto"

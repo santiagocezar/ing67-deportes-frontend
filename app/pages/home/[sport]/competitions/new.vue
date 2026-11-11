@@ -125,10 +125,6 @@ watch(
 
 <template>
     <div>
-        <div class="alert theme-danger" role="alert" v-if="message">
-            {{ message }}
-        </div>
-
         <NuxtLink
             class="d-flex align-items-center gap-1 text-decoration-none mb-3"
             :to="{
@@ -141,6 +137,7 @@ watch(
         </NuxtLink>
         <h1 class="h2 fw-light m-0">Agregar competencia</h1>
 
+        <hr />
         <form class="vstack gap-3 mt-3" action="#" @submit="addCompetition">
             <div class="form-field">
                 <label for="name" class="form-label">Nombre</label>
@@ -191,24 +188,31 @@ watch(
                 <div v-if="!refereesData?.referees.length" class="form-text">
                     No hay árbitros disponibles.
                 </div>
-                <div v-else class="d-flex flex-wrap gap-2">
-                    <div
-                        class="form-field"
+                <ul v-else class="d-flex flex-wrap list-group">
+                    <li
+                        class="list-group-item"
                         v-for="referee in refereesData.referees"
                         :key="referee.id"
                     >
-                        <input
-                            class="check"
-                            type="checkbox"
-                            :id="`referee-${referee.id}`"
-                            :checked="value.referee_ids.includes(referee.id)"
-                            @change="toggleReferee(referee.id)"
-                        />
-                        <label :for="`referee-${referee.id}`">
-                            {{ referee.name }}
-                        </label>
-                    </div>
-                </div>
+                        <div class="form-field">
+                            <input
+                                class="check"
+                                type="checkbox"
+                                :id="`referee-${referee.id}`"
+                                :checked="
+                                    value.referee_ids.includes(referee.id)
+                                "
+                                @change="toggleReferee(referee.id)"
+                            />
+                            <label
+                                class="stretched-link"
+                                :for="`referee-${referee.id}`"
+                            >
+                                {{ referee.name }}
+                            </label>
+                        </div>
+                    </li>
+                </ul>
             </div>
 
             <div class="form-group">
@@ -225,13 +229,11 @@ watch(
                 />
             </div>
 
+            <div class="alert theme-danger" role="alert" v-if="message">
+                {{ message }}
+            </div>
+
             <div class="d-flex align-items-center gap-2">
-                <NuxtLink
-                    class="btn-outline theme-secondary"
-                    :to="`/home/${sportId}`"
-                >
-                    Cancelar
-                </NuxtLink>
                 <button
                     class="btn-solid theme-primary ms-auto"
                     :disabled="saving"

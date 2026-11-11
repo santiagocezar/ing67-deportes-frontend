@@ -10,7 +10,7 @@ const { data } = await useAPI<SportListResponse>("/sports");
 <template>
     <Header title="Deportes"> </Header>
     <div class="container p-4">
-        <h2 class="h2 fw-light m-0">Equipos</h2>
+        <h2 class="h2 fw-light mb-4">Deportes</h2>
         <div
             class="card mb-4 d-flex flex-row gap-4 p-2 align-items-center"
             v-for="sport in data?.sports"

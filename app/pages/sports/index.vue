@@ -17,6 +17,8 @@ import Header from "~/components/Header.vue";
 
 const { $api, $bootstrap } = useNuxtApp();
 
+const { isAdministrator } = useCurrentUser();
+
 const { data, pending, error, refresh } =
     await useAPI<SportListResponse>("/sports");
 
@@ -133,6 +135,7 @@ async function renameSport(ev: SubmitEvent, sport: SportResponse) {
         <div class="d-flex flex-wrap align-items-center gap-2 mb-4">
             <h1 class="h2 fw-light m-0">Deportes</h1>
             <button
+                v-if="isAdministrator"
                 class="btn-solid rounded-pill ms-auto"
                 type="button"
                 data-bs-toggle="collapse"

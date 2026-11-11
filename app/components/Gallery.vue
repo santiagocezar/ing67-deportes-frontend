@@ -6,11 +6,12 @@ const emit = defineEmits<{
     (e: "add", file: File): void;
 }>();
 
-let { max, photoError, currentPhotos, pendingPhotos } = defineProps<{
+let { max, photoError, currentPhotos, pendingPhotos, readonly } = defineProps<{
     max: number;
     photoError: string;
     currentPhotos: string[];
     pendingPhotos: string[];
+    readonly?: boolean;
 }>();
 
 const disabled = computed(() => currentPhotos.length >= max);
@@ -52,7 +53,7 @@ function onCameraUpload(blob: Blob | null) {
             <div class="form-text">Las fotos se guardan automáticamente</div>
         </div>
         <div class="flex-grow-1"></div>
-        <label class="gallery__upload">
+        <label v-if="!readonly" class="gallery__upload">
             <div :disabled="disabled || null" class="btn-solid">
                 <IconImageAdd />
                 <span>Subir</span>
@@ -67,6 +68,7 @@ function onCameraUpload(blob: Blob | null) {
             />
         </label>
         <button
+            v-if="!readonly"
             class="btn-solid theme-accent"
             type="button"
             :disabled
@@ -99,7 +101,7 @@ function onCameraUpload(blob: Blob | null) {
                 <span class="spinner-border" aria-hidden="true"></span>
             </button>
             <button
-                v-else
+                v-else-if="!readonly"
                 class="btn-solid btn-icon btn-sm rounded-circle theme-danger gallery__delete"
                 type="button"
                 @click="emit('delete', src)"
