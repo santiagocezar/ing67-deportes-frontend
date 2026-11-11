@@ -1,154 +1,171 @@
 <script setup lang="ts">
 import type {
-    PlayerSanctionCreateRequest,
     PlayerSanctionListResponse,
     PlayerSanctionResponse,
 } from "~/utils/openapi";
 
+import { IconFilter } from "~/assets/icons";
 import SanctionCard from "~/components/SanctionCard.vue";
-import SanctionForm from "~/components/SanctionForm.vue";
 
 const props = defineProps<{ playerId: number }>();
 
-const emit = defineEmits<{ changed: [] }>();
+type SanctionStatusFilter = PlayerSanctionResponse["status"] | "";
 
-const { $api } = useNuxtApp();
-
-const filters = reactive<{
-    status: PlayerSanctionResponse["status"] | "";
-    page: number;
-}>({
-    status: "",
+const filters = reactive({
+    status: "" as SanctionStatusFilter,
+    created_from: "",
+    created_to: "",
     page: 1,
 });
 
+const dateRangeInvalid = computed(
+    () =>
+        Boolean(filters.created_from) &&
+        Boolean(filters.created_to) &&
+        filters.created_from > filters.created_to,
+);
+
+const hasAppliedFilters = computed(() =>
+    Boolean(filters.status || filters.created_from || filters.created_to),
+);
+
 const sanctionsQuery = computed(() => {
     const query: Record<string, string | number> = { page: filters.page };
+
     if (filters.status) query.status = filters.status;
+    // La API espera fechas con zona horaria; se envían los extremos del día.
+    if (!dateRangeInvalid.value) {
+        if (filters.created_from) {
+            query.created_from = toISOString(
+                `${filters.created_from}T00:00:00`,
+            );
+        }
+        if (filters.created_to) {
+            query.created_to = toISOString(
+                `${filters.created_to}T23:59:59.999`,
+            );
+        }
+    }
+
     return query;
 });
 
-const { data, pending, error, refresh } =
-    await useAPI<PlayerSanctionListResponse>(
-        () => `/players/${props.playerId}/sanctions`,
-        { query: sanctionsQuery },
-    );
+const { data, pending, error } = await useAPI<PlayerSanctionListResponse>(
+    () => `/players/${props.playerId}/sanctions`,
+    { query: sanctionsQuery },
+);
 
-const { canEdit, canAnnull, isDurationLocked } = await useSanctionPermissions();
-
-const { forget: forgetActiveSanction } = useActiveSanctions();
-
-const editing = ref<PlayerSanctionResponse | null>(null);
-const annulling = ref<PlayerSanctionResponse | null>(null);
-const saving = ref(false);
-const dialogError = ref("");
-const dialogSuccess = ref("");
-
-// Cambiar el filtro vuelve a la primera página del historial.
+// Cambiar un filtro vuelve a la primera página del historial.
 watch(
-    () => filters.status,
+    () => [filters.status, filters.created_from, filters.created_to],
     () => {
         filters.page = 1;
     },
 );
 
-function goToPage(page: number) {
-    filters.page = page;
+function clearFilters() {
+    filters.status = "";
+    filters.created_from = "";
+    filters.created_to = "";
 }
 
-function errorMessage(error: unknown) {
-    const body = (error as { data?: { error?: { message?: string } } }).data;
-    return body?.error?.message ?? "Ocurrió un error inesperado.";
-}
-
-function openEdit(sanction: PlayerSanctionResponse) {
-    editing.value = sanction;
-    dialogError.value = "";
-    dialogSuccess.value = "";
-}
-
-function openAnnul(sanction: PlayerSanctionResponse) {
-    annulling.value = sanction;
-    dialogError.value = "";
-    dialogSuccess.value = "";
-}
-
-function clearDialogs() {
-    editing.value = null;
-    annulling.value = null;
-    dialogError.value = "";
-    dialogSuccess.value = "";
-}
-
-async function saveEdit(body: PlayerSanctionCreateRequest) {
-    if (!editing.value) return;
-
-    saving.value = true;
-    dialogError.value = "";
-    dialogSuccess.value = "";
-
-    try {
-        await $api(`/sanctions/${editing.value.id}`, {
-            method: "PUT",
-            body,
-        });
-    } catch (error) {
-        dialogError.value = errorMessage(error);
-        saving.value = false;
-        return;
-    }
-
-    saving.value = false;
-    dialogSuccess.value = "Sanción actualizada.";
-    forgetActiveSanction(props.playerId);
-    await refresh();
-    emit("changed");
-}
-
-async function confirmAnnul() {
-    if (!annulling.value) return;
-
-    saving.value = true;
-    dialogError.value = "";
-    dialogSuccess.value = "";
-
-    try {
-        await $api(`/sanctions/${annulling.value.id}/annul`, {
-            method: "PATCH",
-        });
-    } catch (error) {
-        dialogError.value = errorMessage(error);
-        saving.value = false;
-        return;
-    }
-
-    saving.value = false;
-    dialogSuccess.value = "Sanción anulada.";
-    forgetActiveSanction(props.playerId);
-    await refresh();
-    emit("changed");
+function goToPage(nextPage: number) {
+    filters.page = nextPage;
 }
 </script>
 
 <template>
     <section class="mt-4">
-        <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
-            <h2 class="h5 mb-0 flex-grow-1">Historial disciplinario</h2>
-            <div class="form-field">
-                <label class="form-label" for="sanctions-status">
-                    Estado
-                </label>
-                <select
-                    id="sanctions-status"
-                    class="form-control"
-                    v-model="filters.status"
-                >
-                    <option value="">Todas</option>
-                    <option value="active">Activas</option>
-                    <option value="served">Cumplidas</option>
-                    <option value="annulled">Anuladas</option>
-                </select>
+        <div class="d-flex align-items-center gap-2 mb-3">
+            <h2 class="h5 mb-0 flex-grow-1">Sanciones</h2>
+            <button
+                class="btn-solid btn-styled btn-icon theme-primary ms-auto"
+                type="button"
+                data-bs-toggle="dialog"
+                data-bs-target="#sanction-filters"
+                aria-label="Expandir filtros"
+            >
+                <IconFilter />
+            </button>
+        </div>
+
+        <dialog id="sanction-filters" class="dialog">
+            <div class="dialog-header">
+                <h2 class="dialog-title">
+                    <IconFilter class="me-2" />
+                    Filtros
+                </h2>
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="dialog"
+                    aria-label="Cerrar"
+                ></button>
             </div>
+            <div class="dialog-body d-flex flex-column gap-3">
+                <div class="form-field">
+                    <label for="sanction-filter-status" class="form-label">
+                        Estado
+                    </label>
+                    <select
+                        id="sanction-filter-status"
+                        class="form-control"
+                        v-model="filters.status"
+                    >
+                        <option value="">Todas</option>
+                        <option value="active">Activas</option>
+                        <option value="served">Cumplidas</option>
+                        <option value="annulled">Anuladas</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label
+                        for="sanction-filter-created-from"
+                        class="form-label"
+                    >
+                        Creadas desde
+                    </label>
+                    <input
+                        id="sanction-filter-created-from"
+                        class="form-control"
+                        type="date"
+                        v-model="filters.created_from"
+                        :max="filters.created_to || undefined"
+                    />
+                </div>
+                <div class="form-field">
+                    <label for="sanction-filter-created-to" class="form-label">
+                        Creadas hasta
+                    </label>
+                    <input
+                        id="sanction-filter-created-to"
+                        class="form-control"
+                        type="date"
+                        v-model="filters.created_to"
+                        :min="filters.created_from || undefined"
+                    />
+                </div>
+                <p
+                    v-if="dateRangeInvalid"
+                    class="alert theme-warning mb-0"
+                    role="alert"
+                >
+                    La fecha final debe ser posterior o igual a la fecha
+                    inicial.
+                </p>
+                <button
+                    v-if="hasAppliedFilters"
+                    class="btn-outline theme-secondary"
+                    type="button"
+                    @click="clearFilters"
+                >
+                    Limpiar filtros
+                </button>
+            </div>
+        </dialog>
+
+        <div v-if="dateRangeInvalid" class="alert theme-warning" role="alert">
+            La fecha final debe ser posterior o igual a la fecha inicial.
         </div>
 
         <div class="d-flex align-items-center gap-2 fg-2" v-if="pending">
@@ -169,9 +186,9 @@ async function confirmAnnul() {
                 v-if="!data.sanctions.length"
             >
                 {{
-                    filters.status
-                        ? "No hay sanciones para el estado seleccionado."
-                        : "Este jugador no tiene sanciones registradas."
+                    hasAppliedFilters
+                        ? "No hay sanciones para los filtros seleccionados."
+                        : "Sin registros disciplinarios."
                 }}
             </div>
 
@@ -180,10 +197,6 @@ async function confirmAnnul() {
                     v-for="sanction in data.sanctions"
                     :key="sanction.id"
                     :sanction
-                    :can-edit="canEdit(sanction)"
-                    :can-annull="canAnnull(sanction)"
-                    @edit="openEdit(sanction)"
-                    @annul="openAnnul(sanction)"
                 />
             </div>
 
@@ -236,100 +249,5 @@ async function confirmAnnul() {
                 </p>
             </nav>
         </template>
-
-        <dialog
-            id="sanction-edit-dialog"
-            class="dialog dialog-scrollable"
-            @close="clearDialogs"
-        >
-            <div class="dialog-header">
-                <h2 class="dialog-title">Editar sanción</h2>
-                <button
-                    type="button"
-                    class="btn-close"
-                    data-bs-dismiss="dialog"
-                    aria-label="Cerrar"
-                ></button>
-            </div>
-            <div class="dialog-body vstack gap-3">
-                <div v-if="dialogError" class="alert theme-danger" role="alert">
-                    {{ dialogError }}
-                </div>
-                <div
-                    v-if="dialogSuccess"
-                    class="alert theme-success"
-                    role="status"
-                >
-                    {{ dialogSuccess }}
-                </div>
-                <SanctionForm
-                    v-if="editing"
-                    :key="`edit-${editing.id}`"
-                    :initial="editing"
-                    :player-name="editing.player.name"
-                    :saving
-                    :duration-locked="isDurationLocked(editing)"
-                    submit-label="Guardar cambios"
-                    @submit="saveEdit"
-                />
-            </div>
-        </dialog>
-
-        <dialog id="sanction-annul-dialog" class="dialog" @close="clearDialogs">
-            <div class="dialog-header">
-                <h2 class="dialog-title">Anular sanción</h2>
-                <button
-                    type="button"
-                    class="btn-close"
-                    data-bs-dismiss="dialog"
-                    aria-label="Cerrar"
-                ></button>
-            </div>
-            <div class="dialog-body vstack gap-3">
-                <p class="mb-0" v-if="annulling">
-                    ¿Anular la sanción
-                    <strong>{{ annulling.title }}</strong>
-                    de {{ annulling.player.name }}? La sanción quedará en el
-                    historial como Anulada y no se eliminará.
-                </p>
-                <div v-if="dialogError" class="alert theme-danger" role="alert">
-                    {{ dialogError }}
-                </div>
-                <div
-                    v-if="dialogSuccess"
-                    class="alert theme-success"
-                    role="status"
-                >
-                    {{ dialogSuccess }}
-                </div>
-                <div class="d-flex justify-content-end gap-2">
-                    <button
-                        type="button"
-                        class="btn-outline theme-secondary"
-                        data-bs-dismiss="dialog"
-                    >
-                        Cancelar
-                    </button>
-                    <button
-                        type="button"
-                        class="btn-solid theme-danger"
-                        :disabled="saving || Boolean(dialogSuccess)"
-                        @click="confirmAnnul"
-                    >
-                        {{ saving ? "Anulando…" : "Anular sanción" }}
-                    </button>
-                </div>
-            </div>
-        </dialog>
     </section>
 </template>
-
-<style scoped>
-#sanction-edit-dialog {
-    --bs-dialog-width: 36rem;
-}
-
-#sanction-annul-dialog {
-    --bs-dialog-width: 32rem;
-}
-</style>

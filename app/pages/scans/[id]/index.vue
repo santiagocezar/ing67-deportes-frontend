@@ -155,19 +155,19 @@ function outcomeLabel(
                                 style="grid-template-columns: 1fr auto"
                             >
                                 <dt class="fg-2">Esperados</dt>
-                                <dd class="">
+                                <dd>
                                     {{ scan.expected_players }}
                                 </dd>
                                 <dt class="fg-2">Reconocidos</dt>
-                                <dd class="">
+                                <dd>
                                     {{ scan.unique_recognized_players }}
                                 </dd>
                                 <dt class="fg-2">Caras detectadas</dt>
-                                <dd class="">
+                                <dd>
                                     {{ scan.detected_faces }}
                                 </dd>
                                 <dt class="fg-2">Sin identificar</dt>
-                                <dd class="">
+                                <dd>
                                     {{ unknownFaceCount }}
                                 </dd>
                             </dl>

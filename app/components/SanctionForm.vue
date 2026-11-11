@@ -11,8 +11,8 @@ const MAX_SUSPENSION_MATCHES = 10;
 const props = withDefaults(
     defineProps<{
         initial?: Partial<PlayerSanctionCreateRequest> | null;
-        playerName?: string;
         submitLabel?: string;
+        blocked?: string;
         saving?: boolean;
         durationLocked?: boolean;
     }>(),
@@ -107,43 +107,51 @@ function onSubmit() {
 
 <template>
     <form class="vstack gap-3" action="#" novalidate @submit.prevent="onSubmit">
-        <p v-if="playerName" class="mb-0">
-            Jugador: <strong>{{ playerName }}</strong>
-        </p>
-
         <div class="form-field">
             <label class="form-label" for="sanction-title">Título</label>
             <input
                 id="sanction-title"
-                class="form-control"
-                :class="{ 'is-invalid': errors.title }"
+                :class="{
+                    'is-invalid': errors.title,
+                    'form-control': !blocked,
+                    'form-control-plaintext': !!blocked,
+                }"
+                :readonly="!!blocked"
                 type="text"
                 v-model="form.title"
                 autocomplete="off"
                 @input="errors.title = ''"
             />
-            <div class="invalid-feedback">{{ errors.title }}</div>
-            <div class="form-text">
-                {{ form.title.trim().length }}/{{ TITLE_MAX_LENGTH }}
-                caracteres
-            </div>
+            <template v-if="!blocked">
+                <div class="invalid-feedback">{{ errors.title }}</div>
+                <div class="form-text">
+                    {{ form.title.trim().length }}/{{ TITLE_MAX_LENGTH }}
+                    caracteres
+                </div>
+            </template>
         </div>
 
         <div class="form-field">
             <label class="form-label" for="sanction-reason">Motivo</label>
             <textarea
                 id="sanction-reason"
-                class="form-control"
-                :class="{ 'is-invalid': errors.reason }"
+                :class="{
+                    'is-invalid': errors.reason,
+                    'form-control': !blocked,
+                    'form-control-plaintext': !!blocked,
+                }"
+                :readonly="!!blocked"
                 rows="3"
                 v-model="form.reason"
                 @input="errors.reason = ''"
             ></textarea>
-            <div class="invalid-feedback">{{ errors.reason }}</div>
-            <div class="form-text">
-                {{ form.reason.trim().length }}/{{ REASON_MAX_LENGTH }}
-                caracteres
-            </div>
+            <template v-if="!blocked">
+                <div class="invalid-feedback">{{ errors.reason }}</div>
+                <div class="form-text">
+                    {{ form.reason.trim().length }}/{{ REASON_MAX_LENGTH }}
+                    caracteres
+                </div>
+            </template>
         </div>
 
         <div class="form-field">
@@ -152,8 +160,12 @@ function onSubmit() {
             </label>
             <input
                 id="sanction-suspension-matches"
-                class="form-control"
-                :class="{ 'is-invalid': errors.suspension_matches }"
+                :class="{
+                    'is-invalid': errors.suspension_matches,
+                    'form-control': !blocked,
+                    'form-control-plaintext': !!blocked,
+                }"
+                :readonly="!!blocked"
                 type="number"
                 min="1"
                 max="10"
@@ -162,20 +174,22 @@ function onSubmit() {
                 :disabled="durationLocked"
                 @input="errors.suspension_matches = ''"
             />
-            <div class="invalid-feedback">
-                {{ errors.suspension_matches }}
-            </div>
-            <div v-if="durationLocked" class="form-text">
-                La duración ya no puede modificarse porque se descontó al menos
-                un partido.
-            </div>
-            <div v-else class="form-text">
-                Entre {{ MIN_SUSPENSION_MATCHES }} y
-                {{ MAX_SUSPENSION_MATCHES }} fechas.
-            </div>
+            <template v-if="!blocked">
+                <div class="invalid-feedback">
+                    {{ errors.suspension_matches }}
+                </div>
+                <div v-if="durationLocked" class="form-text">
+                    La duración ya no puede modificarse porque se descontó al
+                    menos un partido.
+                </div>
+                <div v-else class="form-text">
+                    Entre {{ MIN_SUSPENSION_MATCHES }} y
+                    {{ MAX_SUSPENSION_MATCHES }} fechas.
+                </div>
+            </template>
         </div>
 
-        <div class="d-flex justify-content-end">
+        <div v-if="!blocked" class="d-flex justify-content-end">
             <button
                 class="btn-solid theme-primary"
                 type="submit"
@@ -184,6 +198,9 @@ function onSubmit() {
                 <IconSave />
                 <span>{{ saving ? "Guardando…" : submitLabel }}</span>
             </button>
+        </div>
+        <div v-if="blocked" class="alert theme-secondary mt-4" role="status">
+            {{ blocked }}
         </div>
     </form>
 </template>

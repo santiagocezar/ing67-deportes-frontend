@@ -32,18 +32,19 @@ const { data: photos, refresh: refreshPhotos } =
         () => `/players/${route.params.id}/photos`,
     );
 
-const { data: activeSanctions, refresh: refreshActiveSanctions } =
-    await useAPI<PlayerSanctionListResponse>(
-        () => `/players/${route.params.id}/sanctions`,
-        { query: { status: "active" } },
-    );
-
-const hasActiveSanction = computed(
-    () => (activeSanctions.value?.sanctions.length ?? 0) > 0,
+const { data: activeSanctions } = await useAPI<PlayerSanctionListResponse>(
+    () => `/players/${route.params.id}/sanctions`,
+    { query: { status: "active" } },
 );
 
+const activeSanctionsList = computed(
+    () => activeSanctions.value?.sanctions ?? [],
+);
+
+const hasActiveSanction = computed(() => activeSanctionsList.value.length > 0);
+
 const activeRemainingMatches = computed(() =>
-    (activeSanctions.value?.sanctions ?? []).reduce(
+    activeSanctionsList.value.reduce(
         (total, sanction) => total + sanction.remaining_matches,
         0,
     ),
@@ -202,6 +203,51 @@ async function addPhoto(file: File) {
 
         <hr />
 
+        <section
+            class="card overflow-hidden mb-4 theme-warning"
+            v-if="hasActiveSanction"
+        >
+            <div class="card-header hstack align-items-center gap-2">
+                <h2 class="h6 mb-0 flex-grow-1">Sanciones activas</h2>
+            </div>
+            <div class="card-body vstack gap-2 p-0">
+                <ul class="list-group list-group-flush">
+                    <li
+                        v-for="sanction in activeSanctionsList"
+                        :key="sanction.id"
+                        class="list-group-item"
+                    >
+                        <div class="d-flex flex-wrap align-items-center gap-2">
+                            <NuxtLink
+                                :to="{
+                                    name: 'home-sport-sanctions-sanctionId',
+                                    params: {
+                                        sport: route.params.sport,
+                                        sanctionId: sanction.id,
+                                    },
+                                }"
+                            >
+                                <strong>{{ sanction.title }}</strong>
+                            </NuxtLink>
+
+                            <span
+                                class="badge badge-subtle theme-danger ms-auto"
+                            >
+                                Le restan
+                                {{ sanction.remaining_matches }} de
+                                {{ sanction.suspension_matches }}
+                                {{
+                                    sanction.suspension_matches === 1
+                                        ? "fecha"
+                                        : "fechas"
+                                }}
+                            </span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
         <form class="vstack gap-3" action="#" @submit="savePlayer">
             <label class="form-field">
                 <span class="form-label">Nombre</span>
@@ -304,10 +350,7 @@ async function addPhoto(file: File) {
 
         <hr />
 
-        <SanctionHistory
-            :player-id="editing.id"
-            @changed="refreshActiveSanctions"
-        />
+        <SanctionHistory :player-id="editing.id" />
     </template>
 
     <p v-else>No se encontró el jugador.</p>
