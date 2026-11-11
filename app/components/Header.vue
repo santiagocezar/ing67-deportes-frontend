@@ -22,7 +22,13 @@ watch(
 
 <template>
     <header class="navbar border-bottom flex-shrink-0">
-        <div class="container px-4">
+        <div
+            class="container px-4 justify-content-start align-items-center gap-4"
+        >
+            <div
+                :style="`mask-image: url('/logo-sm.svg'); background-color: currentColor; height: 2em; width: 2em;`"
+                class="fg-body"
+            ></div>
             <button
                 class="btn-solid fg-body"
                 type="button"
@@ -54,7 +60,7 @@ watch(
                     </NuxtLink>
                 </template>
             </div>
-            <div class="d-flex gap-4">
+            <div class="ms-auto d-flex gap-4">
                 <slot></slot>
                 <button
                     v-if="me"
