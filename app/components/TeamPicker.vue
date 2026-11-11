@@ -134,48 +134,50 @@ function onToggle(teamId: number, ev: Event) {
                     </svg>
                 </summary>
 
-                <div class="accordion-body">
+                <div class="accordion-body p-0">
                     <p v-if="loading[team.id]" class="fg-2">
                         Cargando jugadores...
                     </p>
                     <p v-else-if="!players[team.id]?.length" class="fg-2">
                         No hay jugadores habilitados en este equipo.
                     </p>
-                    <div v-else class="d-flex flex-wrap gap-2">
-                        <div
-                            class="form-field"
+                    <ul v-else class="list-group list-group-flush">
+                        <li
+                            class="list-group-item"
                             v-for="player in players[team.id]"
                             :key="player.id"
                         >
-                            <input
-                                class="check"
-                                type="checkbox"
-                                :id="playerInputId(team.id, player.id)"
-                                :checked="isSelected(team.id, player.id)"
-                                :disabled="
-                                    isPlayerDisabled(team.id) ||
-                                    (!isSelected(team.id, player.id) &&
-                                        isSanctioned(player.id))
-                                "
-                                @change="togglePlayer(team.id, player.id)"
-                            />
-                            <label :for="playerInputId(team.id, player.id)">
-                                {{ player.name }}
-                                <span
-                                    v-if="isSanctioned(player.id)"
-                                    class="badge badge-subtle theme-danger ms-1"
-                                >
-                                    Sancionado ·
-                                    {{ remainingMatches(player.id) }}
-                                    {{
-                                        remainingMatches(player.id) === 1
-                                            ? "fecha"
-                                            : "fechas"
-                                    }}
-                                </span>
-                            </label>
-                        </div>
-                    </div>
+                            <div class="form-field">
+                                <input
+                                    class="check"
+                                    type="checkbox"
+                                    :id="playerInputId(team.id, player.id)"
+                                    :checked="isSelected(team.id, player.id)"
+                                    :disabled="
+                                        isPlayerDisabled(team.id) ||
+                                        (!isSelected(team.id, player.id) &&
+                                            isSanctioned(player.id))
+                                    "
+                                    @change="togglePlayer(team.id, player.id)"
+                                />
+                                <label :for="playerInputId(team.id, player.id)">
+                                    {{ player.name }}
+                                    <span
+                                        v-if="isSanctioned(player.id)"
+                                        class="badge badge-subtle theme-danger ms-1"
+                                    >
+                                        Sancionado ·
+                                        {{ remainingMatches(player.id) }}
+                                        {{
+                                            remainingMatches(player.id) === 1
+                                                ? "fecha"
+                                                : "fechas"
+                                        }}
+                                    </span>
+                                </label>
+                            </div>
+                        </li>
+                    </ul>
                 </div>
             </details>
         </div>
