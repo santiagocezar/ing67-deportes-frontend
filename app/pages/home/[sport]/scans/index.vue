@@ -5,12 +5,13 @@ import type {
 } from "~/utils/openapi";
 
 import { IconFilter } from "~/assets/icons";
-import Header from "~/components/Header.vue";
 import ScanCard from "~/components/ScanCard.vue";
 
 type ManualReview = MatchRosterScanManualReviewListItemResponse;
 type ReviewStatus = ManualReview["status"] | "all";
 type ReviewSort = "scan_created_at_desc" | "scan_created_at_asc";
+
+const route = useRoute();
 
 const filters = reactive({
     status: "pending" as ReviewStatus,
@@ -19,6 +20,7 @@ const filters = reactive({
 });
 
 const reviewsQuery = computed(() => ({
+    sport_id: route.params.sport,
     status: filters.status,
     sort: filters.sort,
     page: filters.page,
@@ -26,6 +28,7 @@ const reviewsQuery = computed(() => ({
 
 const { data, pending, error } =
     await useAPI<MatchRosterScanManualReviewListResponse>("/manual-reviews", {
+        key: computed(() => sportManualReviewsKey(route.params.sport, filters)),
         query: reviewsQuery,
     });
 
@@ -43,11 +46,9 @@ function goToPage(page: number) {
 </script>
 
 <template>
-    <Header title="Revisiones" />
-
-    <div class="container p-4">
+    <div>
         <div class="d-flex align-items-center gap-2 mb-4">
-            <h1 class="h2 fw-light m-0">Revisiones manuales</h1>
+            <h2 class="h2 fw-light m-0">Revisiones manuales</h2>
             <button
                 class="btn-solid btn-styled btn-icon theme-primary ms-auto"
                 type="button"

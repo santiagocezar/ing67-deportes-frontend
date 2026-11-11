@@ -5,8 +5,9 @@ import type {
     MatchRosterScanManualReviewResponse,
 } from "~/utils/openapi";
 
-import { IconArrowLeft, IconScanPerson } from "~/assets/icons";
-import Header from "~/components/Header.vue";
+import { IconArrowLeft, IconCheckmark, IconScanPerson } from "~/assets/icons";
+
+const route = useRoute();
 
 const { data, pending, error, scan, match, competition, team } =
     await useScanDetail();
@@ -74,12 +75,13 @@ function outcomeLabel(
 </script>
 
 <template>
-    <Header title="Revisión" />
-
-    <div class="container p-4">
+    <div>
         <NuxtLink
             class="d-flex align-items-center gap-1 text-decoration-none mb-3"
-            :to="{ name: 'scans' }"
+            :to="{
+                name: 'home-sport-scans',
+                params: { sport: route.params.sport },
+            }"
         >
             <IconArrowLeft />
             <span>Volver a revisiones</span>
@@ -139,7 +141,7 @@ function outcomeLabel(
                             countWarning ? 'theme-warning' : 'theme-primary'
                         "
                     >
-                        <div class="card-header">Resultado del escaneo</div>
+                        <div class="card-header">Resultado inicial</div>
                         <div class="card-body">
                             <div class="fw-semibold">
                                 <span v-if="countWarning">
@@ -176,60 +178,22 @@ function outcomeLabel(
                                 Escaneo del
                                 {{ formatDateTime(scan.created_at) }}
                             </p>
-                        </div>
-                    </section>
-                    <section class="mt-4">
-                        <h2 class="h4 mb-4">Foto grupal</h2>
-                        <div
-                            v-if="scan.manual_review?.status !== 'pending'"
-                            class="fg-2 mb-0"
-                        >
-                            No disponible para revisiones resueltas.
-                        </div>
-                        <div
-                            v-else-if="groupImagePending"
-                            class="d-flex align-items-center gap-2 fg-2"
-                        >
-                            <span
-                                class="spinner-border spinner-border-sm"
-                                aria-hidden="true"
-                            ></span>
-                            Cargando imagen…
-                        </div>
-                        <div
-                            v-else-if="groupImageError"
-                            class="alert theme-danger mb-0"
-                            role="alert"
-                        >
-                            No se pudo cargar la imagen grupal.
-                        </div>
-                        <img
-                            v-else-if="groupImageUrl"
-                            class="group-image"
-                            :src="groupImageUrl"
-                            alt="Foto grupal retenida del equipo"
-                        />
-                    </section>
-                </div>
-                <div>
-                    <section>
-                        <h2 class="h4 mb-4">Caras detectadas</h2>
 
-                        <p v-if="!scan.faces.length" class="fg-2">
-                            El escaneo no detectó caras.
-                        </p>
+                            <p v-if="!scan.faces.length" class="fg-2">
+                                El escaneo no detectó caras.
+                            </p>
 
-                        <div class="vstack gap-2" v-else>
-                            <article
-                                v-for="face in scan.faces"
-                                :key="face.face_index"
-                                class="card"
-                            >
-                                <div class="card-body gap-3">
+                            <div class="theme-reset theme-base" v-else>
+                                <article
+                                    v-for="(face, i) in scan.faces"
+                                    :key="face.face_index"
+                                    class=""
+                                >
+                                    <hr v-if="i > 0" />
                                     <div class="hstack">
                                         <img
                                             v-if="crops[face.face_index]"
-                                            class="avatar me-4 avatar-xl object-fit-cover"
+                                            class="avatar flex-shrink-0 me-4 avatar-xl object-fit-cover"
                                             style="border: none"
                                             :src="crops[face.face_index]"
                                             :alt="
@@ -255,14 +219,6 @@ function outcomeLabel(
                                                         face.player_name ??
                                                         "Jugador no identificado"
                                                     }}
-                                                    <span
-                                                        class="fg-2 fw-light small"
-                                                    >
-                                                        · Cara
-                                                        {{
-                                                            face.face_index + 1
-                                                        }}
-                                                    </span>
                                                 </p>
                                                 <span
                                                     class="badge badge-subtle"
@@ -313,58 +269,23 @@ function outcomeLabel(
                                             }})
                                         </li>
                                     </ul>
-                                </div>
-                            </article>
+                                </article>
+                            </div>
                         </div>
                     </section>
-
-                    <section
-                        v-if="scan.manual_review?.status === 'pending'"
-                        class="card mt-4"
-                    >
-                        <div class="card-header">
-                            <h2 class="h5 mb-0 hstack gap-2">
-                                <IconScanPerson />
-                                Resolver revisión
-                            </h2>
-                        </div>
-                        <div
-                            class="card-body d-flex flex-wrap align-items-center gap-2"
-                        >
-                            <p
-                                v-if="canResolve"
-                                class="fg-2 small mb-0 flex-grow-1"
-                            >
-                                Indicá qué hacer con cada cara que el escaneo no
-                                pudo identificar. La revisión se guarda una sola
-                                vez.
-                            </p>
-                            <p v-else class="fg-2 small mb-0 flex-grow-1">
-                                {{ blockedReason }}
-                            </p>
-                            <NuxtLink
-                                v-if="canResolve"
-                                class="btn-solid theme-primary"
-                                :to="{
-                                    name: 'scans-id-resolve',
-                                    params: { id: scan.id },
-                                }"
-                            >
-                                <IconScanPerson />
-                                <span>Resolver revisión</span>
-                            </NuxtLink>
-                        </div>
-                    </section>
-
+                </div>
+                <div>
                     <section
                         v-if="scan.manual_review"
-                        class="card mt-4"
+                        class="card"
                         aria-labelledby="manual-review-title"
                     >
-                        <div class="card-header">
-                            <h2 id="manual-review-title" class="h5 mb-0">
-                                Revisión manual
-                            </h2>
+                        <div
+                            id="manual-review-title"
+                            class="card-header hstack align-items-center gap-2"
+                        >
+                            <IconCheckmark />
+                            Revisión manual
                         </div>
                         <div class="card-body">
                             <p class="fg-2 small">
@@ -399,9 +320,6 @@ function outcomeLabel(
                                     :key="decision.face_index"
                                     class="list-group-item px-0 d-flex flex-wrap align-items-center gap-2"
                                 >
-                                    <strong
-                                        >Cara {{ decision.face_index }}</strong
-                                    >
                                     <span
                                         class="badge badge-subtle theme-secondary"
                                     >
@@ -424,7 +342,69 @@ function outcomeLabel(
                             <p v-else class="fg-2 mb-0">
                                 Todavía no hay decisiones registradas.
                             </p>
+
+                            <template
+                                v-if="scan.manual_review?.status === 'pending'"
+                            >
+                                <p
+                                    v-if="canResolve"
+                                    class="fg-2 small mb-0 flex-grow-1"
+                                >
+                                    Indicá qué hacer con cada cara que el
+                                    escaneo no pudo identificar. La revisión se
+                                    guarda una sola vez.
+                                </p>
+                                <p v-else class="fg-2 small mb-0 flex-grow-1">
+                                    {{ blockedReason }}
+                                </p>
+                                <NuxtLink
+                                    v-if="canResolve"
+                                    class="btn-solid theme-primary"
+                                    :to="{
+                                        name: 'home-sport-scans-id-resolve',
+                                        params: {
+                                            sport: route.params.sport,
+                                            id: scan.id,
+                                        },
+                                    }"
+                                >
+                                    <IconScanPerson />
+                                    <span>Resolver revisión</span>
+                                </NuxtLink>
+                            </template>
                         </div>
+                    </section>
+                    <section class="mt-4">
+                        <h2 class="h4 mb-4">Foto grupal</h2>
+                        <div
+                            v-if="scan.manual_review?.status !== 'pending'"
+                            class="fg-2 mb-0"
+                        >
+                            No disponible para revisiones resueltas.
+                        </div>
+                        <div
+                            v-else-if="groupImagePending"
+                            class="d-flex align-items-center gap-2 fg-2"
+                        >
+                            <span
+                                class="spinner-border spinner-border-sm"
+                                aria-hidden="true"
+                            ></span>
+                            Cargando imagen…
+                        </div>
+                        <div
+                            v-else-if="groupImageError"
+                            class="alert theme-danger mb-0"
+                            role="alert"
+                        >
+                            No se pudo cargar la imagen grupal.
+                        </div>
+                        <img
+                            v-else-if="groupImageUrl"
+                            class="group-image"
+                            :src="groupImageUrl"
+                            alt="Foto grupal retenida del equipo"
+                        />
                     </section>
                 </div>
             </div>

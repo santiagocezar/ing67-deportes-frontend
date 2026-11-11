@@ -2408,6 +2408,10 @@ export type MatchRosterScansManualReviewsListData = {
      */
     match_id?: number | null;
     /**
+     * Sport Id
+     */
+    sport_id?: number | null;
+    /**
      * Status
      */
     status?: 'pending' | 'resolved' | 'expired' | 'all';

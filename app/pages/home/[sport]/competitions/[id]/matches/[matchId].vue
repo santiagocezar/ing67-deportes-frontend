@@ -35,10 +35,14 @@ const readonly = computed(() => !isAdministrator.value);
 const { data: manualReviewStatus, refresh: refreshManualReviewStatus } =
     await useAPI<MatchManualReviewStatusResponse>(
         () => `/matches/${route.params.matchId}/manual-review-status`,
+        {
+            key: computed(() => matchReviewStatusKey(route.params.matchId)),
+        },
     );
 
 const { data: pendingReviews, refresh: refreshPendingReviews } =
     await useAPI<MatchRosterScanManualReviewListResponse>("/manual-reviews", {
+        key: computed(() => matchManualReviewsKey(route.params.matchId)),
         query: computed(() => ({
             match_id: Number(route.params.matchId),
             status: "pending",
@@ -417,7 +421,10 @@ async function saveMatch(ev: SubmitEvent) {
                     </div>
                     <NuxtLink
                         class="btn-outline btn-sm theme-secondary"
-                        :to="{ name: 'scans' }"
+                        :to="{
+                            name: 'home-sport-scans',
+                            params: { sport: route.params.sport },
+                        }"
                     >
                         Ver todas
                     </NuxtLink>

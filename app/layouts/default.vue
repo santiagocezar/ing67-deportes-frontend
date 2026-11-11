@@ -44,7 +44,7 @@ const routes = computed(() => [
     {
         icon: IconScanPersonRegular,
         iconActive: IconScanPersonActive,
-        to: "/scans",
+        to: `/home/${sportId.value}/scans`,
         label: "Revisiones",
     },
 ]);

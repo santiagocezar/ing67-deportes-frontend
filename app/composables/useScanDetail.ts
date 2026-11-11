@@ -11,7 +11,7 @@ export async function useScanDetail() {
     const { $api } = useNuxtApp();
 
     const { data, pending, error, refresh } = await useAsyncData(
-        () => `scan-${route.params.id}`,
+        () => scanDetailKey(route.params.id),
         async () => {
             const scan = await $api<MatchRosterScanResponse>(
                 `/roster-scans/${route.params.id}`,

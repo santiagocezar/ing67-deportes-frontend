@@ -655,15 +655,7 @@ export const playerSanctionsAnnul = <ThrowOnError extends boolean = false>(optio
  *
  * Returns every sport ordered by identifier.
  */
-export const sportsList = <ThrowOnError extends boolean = false>(options?: Options<SportsListData, ThrowOnError>): RequestResult<SportsListResponses, SportsListErrors, ThrowOnError> => (options?.client ?? client).get<SportsListResponses, SportsListErrors, ThrowOnError>({
-  security: [{
-      key: 'AccessTokenAuth',
-      scheme: 'bearer',
-      type: 'http'
-    }],
-  url: '/sports',
-  ...options
-});
+export const sportsList = <ThrowOnError extends boolean = false>(options?: Options<SportsListData, ThrowOnError>): RequestResult<SportsListResponses, SportsListErrors, ThrowOnError> => (options?.client ?? client).get<SportsListResponses, SportsListErrors, ThrowOnError>({ url: '/sports', ...options });
 
 /**
  * Create a sport

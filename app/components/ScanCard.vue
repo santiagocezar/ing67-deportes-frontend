@@ -5,6 +5,8 @@ const { review } = defineProps<{
     review: MatchRosterScanManualReviewListItemResponse;
 }>();
 
+const route = useRoute();
+
 function statusLabel(
     status: MatchRosterScanManualReviewListItemResponse["status"],
 ) {
@@ -29,7 +31,10 @@ function statusTheme(
 <template>
     <NuxtLink
         class="card text-decoration-none"
-        :to="{ name: 'scans-id', params: { id: review.scan.id } }"
+        :to="{
+            name: 'home-sport-scans-id',
+            params: { sport: route.params.sport, id: review.scan.id },
+        }"
     >
         <div class="card-body">
             <div class="d-flex flex-wrap align-items-start gap-2">
