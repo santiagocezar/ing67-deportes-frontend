@@ -288,7 +288,7 @@ watch(
 
             <div
                 v-if="importFeedback"
-                class="alert theme-success"
+                class="alert vstack theme-success"
                 role="status"
             >
                 <p class="mb-1">
@@ -345,26 +345,28 @@ watch(
                 <p v-if="!refereesData?.referees.length" class="form-text mb-0">
                     No hay árbitros disponibles.
                 </p>
-                <div v-else class="d-flex flex-wrap gap-2">
-                    <div
-                        class="form-field"
+                <ul v-else class="list-group">
+                    <li
+                        class="list-group-item"
                         v-for="referee in refereesData.referees"
                         :key="referee.id"
                     >
-                        <input
-                            class="check"
-                            type="checkbox"
-                            :id="`referee-${referee.id}`"
-                            :checked="
-                                participantRefereeIds.includes(referee.id)
-                            "
-                            @change="toggleReferee(referee.id)"
-                        />
-                        <label :for="`referee-${referee.id}`">
-                            {{ referee.name }}
-                        </label>
-                    </div>
-                </div>
+                        <div class="form-field">
+                            <input
+                                class="check"
+                                type="checkbox"
+                                :id="`referee-${referee.id}`"
+                                :checked="
+                                    participantRefereeIds.includes(referee.id)
+                                "
+                                @change="toggleReferee(referee.id)"
+                            />
+                            <label :for="`referee-${referee.id}`">
+                                {{ referee.name }}
+                            </label>
+                        </div>
+                    </li>
+                </ul>
             </div>
             <div class="alert theme-danger" role="alert" v-if="message">
                 {{ message }}
